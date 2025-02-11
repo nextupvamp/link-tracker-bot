@@ -1,7 +1,9 @@
 package backend.academy.scrapper.service;
 
+import backend.academy.scrapper.model.Subscription;
+
 public record Update(
-    String url,
+    Subscription subscription,
     String description
 ) {
 }

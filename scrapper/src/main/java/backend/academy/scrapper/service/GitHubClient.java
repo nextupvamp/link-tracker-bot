@@ -8,13 +8,14 @@ import java.util.regex.Pattern;
 import org.springframework.web.reactive.function.client.WebClient;
 
 public class GitHubClient implements Client {
+    // comments are the same as in the stackoverflow implementation
     private static final Pattern GITHUB_URL_REGEX =
         Pattern.compile("https://github.com/(?<owner>.*)/(?<repo>.*)");
 
     private final WebClient webClient;
 
-    public GitHubClient(String githubApiUrl) {
-        this.webClient = WebClient.create(githubApiUrl);
+    public GitHubClient(String gitHubApiUrl) {
+        webClient = WebClient.create(gitHubApiUrl);
     }
 
     @Override
@@ -30,7 +31,7 @@ public class GitHubClient implements Client {
         long lastActivityDate = response.updated_at().toEpochSecond();
         if (lastActivityDate > subscription.lastUpdate()) {
             subscription.lastUpdate(lastActivityDate);
-            return Optional.of(new Update(subscription.url(), ""));
+            return Optional.of(new Update(subscription, ""));
         }
 
         return Optional.empty();

@@ -3,16 +3,18 @@ package backend.academy.bot.service;
 import backend.academy.bot.model.Link;
 import java.util.Optional;
 import org.springframework.http.HttpMethod;
-import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 
-@Component
 public class ScrapperClient {
-    private final WebClient webClient = WebClient.create("http://localhost:8081");
+    private final WebClient webClient;
 
-    public String addChat(long chatId) {
-        return webClient
+    public ScrapperClient(String scrapperUrl) {
+        webClient = WebClient.create(scrapperUrl);
+    }
+
+    public void addChat(long chatId) {
+        webClient
             .post()
             .uri("/tg-chat/" + chatId)
             .retrieve()
@@ -20,8 +22,8 @@ public class ScrapperClient {
             .block();
     }
 
-    public Optional<String> deleteChat(long chatId) {
-        return webClient
+    public void deleteChat(long chatId) {
+        webClient
             .delete()
             .uri("/tg-chat/" + chatId)
             .retrieve()
