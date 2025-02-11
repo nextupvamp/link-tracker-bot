@@ -2,7 +2,9 @@ package backend.academy.scrapper.repository;
 
 import backend.academy.scrapper.model.Subscription;
 import org.springframework.stereotype.Repository;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -14,8 +16,17 @@ public class SubscriptionRepository {
         return Optional.ofNullable(subscriptions.get(Url));
     }
 
+    public List<Subscription> findAll() {
+        return new ArrayList<>(subscriptions.values());
+    }
+
     public Subscription save(Subscription subscription) {
         subscriptions.put(subscription.url(), subscription);
+        return subscription;
+    }
+
+    public Subscription delete(Subscription subscription) {
+        subscriptions.remove(subscription.url());
         return subscription;
     }
 }
