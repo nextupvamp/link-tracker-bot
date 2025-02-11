@@ -1,9 +1,9 @@
 package backend.academy.bot.service;
 
-import backend.academy.bot.model.ChatData;
+import backend.academy.bot.model.ChatStateData;
 import backend.academy.bot.model.ChatState;
 import backend.academy.bot.model.Link;
-import backend.academy.bot.repository.ChatDataRepository;
+import backend.academy.bot.repository.ChatStateRepository;
 import com.pengrad.telegrambot.model.Message;
 import com.pengrad.telegrambot.model.Update;
 import java.net.URI;
@@ -14,8 +14,8 @@ import org.springframework.stereotype.Service;
 
 @Service
 @AllArgsConstructor
-public class UpdateHandler {
-    private final ChatDataRepository chatDataRepository;
+public class MessageHandler {
+    private final ChatStateRepository chatStateRepository;
     private final ScrapperClient scrapperClient;
 
     public String handle(Update update) {
@@ -28,7 +28,7 @@ public class UpdateHandler {
             return handleStart(chatId);
         }
 
-        var chatData = chatDataRepository.findById(chatId);
+        var chatData = chatStateRepository.findById(chatId);
 
         if (chatData.isPresent() && chatData.get().chatState() == ChatState.DEFAULT) {
             return switch (command) {
@@ -54,10 +54,10 @@ public class UpdateHandler {
 
     private String handleStart(long chatId) {
         String reply;
-        var newChat = chatDataRepository.findById(chatId);
+        var newChat = chatStateRepository.findById(chatId);
         if (newChat.isEmpty()) {
             scrapperClient.addChat(chatId);
-            chatDataRepository.save(chatId, new ChatData());
+            chatStateRepository.save(chatId, new ChatStateData());
             reply = "Hello! You can see the bot's commands by entering /help";
         } else {
             reply = "You've already started! Enter /help to see bot's commands.";
@@ -65,8 +65,8 @@ public class UpdateHandler {
         return reply;
     }
 
-    private String handleTags(ChatData chatData, String[] tokens) {
-        var currentLink = chatData.currentEditedLink();
+    private String handleTags(ChatStateData chatStateData, String[] tokens) {
+        var currentLink = chatStateData.currentEditedLink();
         Set<String> tags = currentLink.tags();
         Collections.addAll(tags, tokens);
 
@@ -74,13 +74,13 @@ public class UpdateHandler {
         reply.append("Added tags:\n");
         tags.forEach(it -> reply.append(it).append('\n'));
 
-        chatData.chatState(ChatState.ENTERING_FILTERS);
+        chatStateData.chatState(ChatState.ENTERING_FILTERS);
         reply.append("You can add filters or finish adding with /cancel");
         return reply.toString();
     }
 
-    private String handleFilters(long chatId, ChatData chatData, String[] tokens) {
-        var currentLink = chatData.currentEditedLink();
+    private String handleFilters(long chatId, ChatStateData chatStateData, String[] tokens) {
+        var currentLink = chatStateData.currentEditedLink();
         Set<String> filters = currentLink.filters();
 
         StringBuilder reply = new StringBuilder();
@@ -94,11 +94,11 @@ public class UpdateHandler {
             }
         }
 
-        reply.append(finishAdding(chatId, chatData));
+        reply.append(finishAdding(chatId, chatStateData));
         return reply.toString();
     }
 
-    private String handleTrack(ChatData chatData, String[] tokens) {
+    private String handleTrack(ChatStateData chatStateData, String[] tokens) {
         if (tokens.length != 2) {
             return "Wrong format. Try \"/track <url>\"";
         }
@@ -109,8 +109,8 @@ public class UpdateHandler {
         }
 
 
-        chatData.currentEditedLink(new Link(tokens[1]));
-        chatData.chatState(ChatState.ENTERING_TAGS);
+        chatStateData.currentEditedLink(new Link(tokens[1]));
+        chatStateData.chatState(ChatState.ENTERING_TAGS);
 
         StringBuilder reply = new StringBuilder();
         reply.append("Link ").append(tokens[1]).append(" has been added.\n");
@@ -124,22 +124,19 @@ public class UpdateHandler {
             return "Wrong format. Try \"/untrack <url>\".";
         }
 
-        try {
-            // there we are deleting and checking if link was found and deleted
-            if (!scrapperClient.removeLink(chatId, new Link(tokens[1])).isPresent()) {
-                return "Link not found. Try /list to see your actual tracked links.";
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        // there we are deleting and checking if link was found and deleted
+        if (scrapperClient.removeLink(chatId, new Link(tokens[1])).isEmpty()) {
+            return "Link not found. Try /list to see your actual tracked links.";
         }
 
         return "Link " + tokens[1] + " has been removed.";
     }
 
-    private String finishAdding(long chatId, ChatData chatData) {
-        chatData.chatState(ChatState.DEFAULT);
-        scrapperClient.addLink(chatId, chatData.currentEditedLink());
-        chatData.currentEditedLink(null);
+    private String finishAdding(long chatId, ChatStateData chatStateData) {
+        scrapperClient.addLink(chatId, chatStateData.currentEditedLink());
+
+        chatStateData.chatState(ChatState.DEFAULT);
+        chatStateData.currentEditedLink(null);
         return "You've finished adding.";
     }
 

@@ -5,7 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class ChatData {
+public class ChatStateData {
     private ChatState chatState = ChatState.DEFAULT;
     private Link currentEditedLink;
 }
