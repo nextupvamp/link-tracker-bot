@@ -1,4 +1,4 @@
-package backend.academy.bot.service;
+package backend.academy.bot.client;
 
 import backend.academy.bot.model.Link;
 import java.util.Set;

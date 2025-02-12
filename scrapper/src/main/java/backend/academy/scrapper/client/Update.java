@@ -1,4 +1,4 @@
-package backend.academy.scrapper.service;
+package backend.academy.scrapper.client;
 
 import backend.academy.scrapper.model.Subscription;
 

@@ -1,8 +1,8 @@
 package backend.academy.scrapper;
 
-import backend.academy.scrapper.service.BotClient;
-import backend.academy.scrapper.service.GitHubClient;
-import backend.academy.scrapper.service.StackOverflowClient;
+import backend.academy.scrapper.client.BotClient;
+import backend.academy.scrapper.client.GitHubCheckUpdateClient;
+import backend.academy.scrapper.client.StackOverflowCheckUpdateClient;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -23,12 +23,12 @@ public class ScrapperApplication {
     }
 
     @Bean
-    public GitHubClient gitHubClient(ScrapperConfig scrapperConfig) {
-        return new GitHubClient(scrapperConfig.gitHubApiUrl());
+    public GitHubCheckUpdateClient gitHubClient(ScrapperConfig scrapperConfig) {
+        return new GitHubCheckUpdateClient(scrapperConfig.gitHubApiUrl());
     }
 
     @Bean
-    public StackOverflowClient stackOverflowClient(ScrapperConfig scrapperConfig) {
-        return new StackOverflowClient(scrapperConfig.stackExchangeApiUrl());
+    public StackOverflowCheckUpdateClient stackOverflowClient(ScrapperConfig scrapperConfig) {
+        return new StackOverflowCheckUpdateClient(scrapperConfig.stackExchangeApiUrl());
     }
 }
