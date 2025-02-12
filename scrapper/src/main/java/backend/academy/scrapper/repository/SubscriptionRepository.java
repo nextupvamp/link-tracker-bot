@@ -20,13 +20,11 @@ public class SubscriptionRepository {
         return new ArrayList<>(subscriptions.values());
     }
 
-    public Subscription save(Subscription subscription) {
+    public void save(Subscription subscription) {
         subscriptions.put(subscription.url(), subscription);
-        return subscription;
     }
 
-    public Subscription delete(Subscription subscription) {
+    public void delete(Subscription subscription) {
         subscriptions.remove(subscription.url());
-        return subscription;
     }
 }

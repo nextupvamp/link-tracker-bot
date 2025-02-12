@@ -14,9 +14,8 @@ public class ChatRepository {
         return Optional.ofNullable(chats.get(id));
     }
 
-    public Chat save(Chat chat) {
+    public void save(Chat chat) {
         chats.put(chat.id(), chat);
-        return chat;
     }
 
     public void delete(Chat chat) {

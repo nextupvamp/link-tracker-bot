@@ -14,8 +14,7 @@ public class ChatStateRepository {
         return Optional.ofNullable(chats.get(id));
     }
 
-    public ChatStateData save(long chatId, ChatStateData chatStateData) {
+    public void save(long chatId, ChatStateData chatStateData) {
         chats.put(chatId, chatStateData);
-        return chatStateData;
     }
 }
