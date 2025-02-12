@@ -1,20 +1,31 @@
 package backend.academy.bot.service;
 
-import backend.academy.bot.model.ChatStateData;
+import backend.academy.bot.client.ScrapperClient;
 import backend.academy.bot.model.ChatState;
+import backend.academy.bot.model.ChatStateData;
 import backend.academy.bot.model.Link;
 import backend.academy.bot.repository.ChatStateRepository;
 import com.pengrad.telegrambot.model.Message;
 import com.pengrad.telegrambot.model.Update;
-import java.net.URI;
 import java.util.Collections;
 import java.util.Set;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @AllArgsConstructor
 public class MessageHandler {
+    private static final String ERROR_RESPONSE_FORMAT = "An error occurred while trying to %s. Try again later.";
+    private static final String NOT_AVAILABLE_MESSAGE = "Service is not available. Try again later";
+    private static final String HELP_COMMAND = "/help";
+    private static final String TRACK_COMMAND = "/track";
+    private static final String UNTRACK_COMMAND = "/untrack";
+    private static final String LIST_COMMAND = "/list";
+    private static final String START_COMMAND = "/start";
+    private static final String CANCEL_COMMAND = "/cancel";
+
     private final ChatStateRepository chatStateRepository;
     private final ScrapperClient scrapperClient;
 
@@ -24,7 +35,7 @@ public class MessageHandler {
         String[] tokens = message.text().split(" ");
         String command = tokens[0].toLowerCase();
 
-        if (command.equals("/start")) {
+        if (command.equals(START_COMMAND)) {
             return handleStart(chatId);
         }
 
@@ -32,14 +43,15 @@ public class MessageHandler {
 
         if (chatData.isPresent() && chatData.get().chatState() == ChatState.DEFAULT) {
             return switch (command) {
-                case "/help" -> "There's some help for you.";
-                case "/track" -> handleTrack(chatData.get(), tokens);
-                case "/untrack" -> handleUntrack(chatId, tokens);
-                case "/list" -> handleList(chatId);
-                default -> "Unknown command. Enter /help to see actual commands.";
+                // TODO MAKE HELP FILE
+                case HELP_COMMAND -> "There's some help for you.";
+                case TRACK_COMMAND -> handleTrack(chatData.get(), tokens);
+                case UNTRACK_COMMAND -> handleUntrack(chatId, tokens);
+                case LIST_COMMAND -> handleList(chatId);
+                default -> "Unknown command. Enter " + HELP_COMMAND + " to see actual commands.";
             };
         } else if (chatData.isPresent()) {
-            if (command.equals("/cancel")) {
+            if (command.equals(CANCEL_COMMAND)) {
                 return finishAdding(chatId, chatData.get());
             }
             return switch (chatData.get().chatState()) {
@@ -48,21 +60,27 @@ public class MessageHandler {
                 default -> throw new IllegalStateException("Unexpected state: " + chatData.get());
             };
         } else {
-            return "Bot isn't started. Enter /start";
+            return "Bot isn't started. Enter " + START_COMMAND;
         }
     }
 
     private String handleStart(long chatId) {
-        String reply;
         var newChat = chatStateRepository.findById(chatId);
-        if (newChat.isEmpty()) {
+
+        if (newChat.isPresent()) {
+            return "You've already started! Enter " + HELP_COMMAND + " to see bot's commands.";
+        }
+
+        try {
             scrapperClient.addChat(chatId);
             chatStateRepository.save(chatId, new ChatStateData());
-            reply = "Hello! You can see the bot's commands by entering /help";
-        } else {
-            reply = "You've already started! Enter /help to see bot's commands.";
+            return "Hello! You can see the bot's commands by entering " + HELP_COMMAND;
+        } catch (ResponseStatusException e) {
+            if (e.getStatusCode().is5xxServerError()) {
+                return NOT_AVAILABLE_MESSAGE;
+            }
+            return String.format(ERROR_RESPONSE_FORMAT, "create new chat.");
         }
-        return reply;
     }
 
     private String handleTags(ChatStateData chatStateData, String[] tokens) {
@@ -75,7 +93,7 @@ public class MessageHandler {
         tags.forEach(it -> reply.append(it).append('\n'));
 
         chatStateData.chatState(ChatState.ENTERING_FILTERS);
-        reply.append("You can add filters or finish adding with /cancel");
+        reply.append("You can add filters or finish adding with " + CANCEL_COMMAND);
         return reply.toString();
     }
 
@@ -100,57 +118,71 @@ public class MessageHandler {
 
     private String handleTrack(ChatStateData chatStateData, String[] tokens) {
         if (tokens.length != 2) {
-            return "Wrong format. Try \"/track <url>\"";
+            return "Wrong format. Try \"" + TRACK_COMMAND + " <url>\"";
         }
-        try {
-            var ignored = URI.create(tokens[1]);
-        } catch (Exception e) {
-            return tokens[1] + " is not a valid URL";
-        }
-
 
         chatStateData.currentEditedLink(new Link(tokens[1]));
         chatStateData.chatState(ChatState.ENTERING_TAGS);
 
-        StringBuilder reply = new StringBuilder();
-        reply.append("Link ").append(tokens[1]).append(" has been added.\n");
-        reply.append("You can add tags or finish adding with /cancel");
-
-        return reply.toString();
+        return "Link " + tokens[1] + " has been added.\n" +
+            "You can add tags or finish adding with " + CANCEL_COMMAND;
     }
 
     private String handleUntrack(long chatId, String[] tokens) {
         if (tokens.length != 2) {
-            return "Wrong format. Try \"/untrack <url>\".";
+            return "Wrong format. Try \"" + UNTRACK_COMMAND + " <url>\".";
         }
 
-        // there we are deleting and checking if link was found and deleted
-        if (scrapperClient.removeLink(chatId, new Link(tokens[1])).isEmpty()) {
-            return "Link not found. Try /list to see your actual tracked links.";
+        try {
+            var removedLink = scrapperClient.removeLink(chatId, new Link(tokens[1]));
+            return "Link " + removedLink.url() + " has been removed.";
+        } catch (ResponseStatusException e) {
+            var httpStatusCode = e.getStatusCode();
+            if (httpStatusCode.is5xxServerError()) {
+                return NOT_AVAILABLE_MESSAGE;
+            }
+            var status = HttpStatus.resolve(httpStatusCode.value());
+            return switch (status) {
+                case HttpStatus.BAD_REQUEST -> String.format(ERROR_RESPONSE_FORMAT, "untrack link.");
+                case HttpStatus.NOT_FOUND -> "Link not found. Try " + LIST_COMMAND + " to see your actual tracked links.";
+                default -> throw new IllegalStateException("Unexpected value: " + status);
+            };
         }
-
-        return "Link " + tokens[1] + " has been removed.";
     }
 
     private String finishAdding(long chatId, ChatStateData chatStateData) {
-        scrapperClient.addLink(chatId, chatStateData.currentEditedLink());
-
-        chatStateData.chatState(ChatState.DEFAULT);
-        chatStateData.currentEditedLink(null);
-        return "You've finished adding.";
+        try {
+            scrapperClient.addLink(chatId, chatStateData.currentEditedLink());
+            return "You've successfully finished adding.";
+        } catch (ResponseStatusException e) {
+            if (e.getStatusCode().is5xxServerError()) {
+                return NOT_AVAILABLE_MESSAGE;
+            }
+            return String.format(ERROR_RESPONSE_FORMAT, "add new link (unsupported or invalid link)");
+        } finally {
+            chatStateData.chatState(ChatState.DEFAULT);
+            chatStateData.currentEditedLink(null);
+        }
     }
 
     private String handleList(long chatId) {
-        var links = scrapperClient.getAllLinks(chatId).links();
 
-        if (links == null || links.isEmpty()) {
-            return "No links found. Try /track to add new tracked links.";
+        try {
+            var links = scrapperClient.getAllLinks(chatId).links();
+            if (links == null || links.isEmpty()) {
+                return "No links found. Try " + TRACK_COMMAND + " to add new tracked links.";
+            }
+
+            StringBuilder reply = new StringBuilder();
+            reply.append("Tracked links:\n");
+            links.forEach(it -> reply.append(it).append("\n"));
+
+            return reply.toString();
+        } catch (ResponseStatusException e) {
+            if (e.getStatusCode().is5xxServerError()) {
+                return NOT_AVAILABLE_MESSAGE;
+            }
+            return String.format(ERROR_RESPONSE_FORMAT, "get list of links.");
         }
-
-        StringBuilder reply = new StringBuilder();
-        reply.append("Tracked links:\n");
-        links.forEach(it -> reply.append(it).append("\n"));
-
-        return reply.toString();
     }
 }

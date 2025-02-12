@@ -50,6 +50,9 @@ public class ScrapperController {
 
     @DeleteMapping("links")
     public Link deleteLink(@RequestParam("Tg-Chat-Id") long id, @RequestBody RemoveLinkRequest link) {
+        if (id < 0) {
+            throw new IllegalArgumentException("ID cannot be negative");
+        }
         return chatService.deleteLink(id, link.url());
     }
 }
