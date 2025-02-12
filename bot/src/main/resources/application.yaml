@@ -12,6 +12,11 @@ spring:
       ddl-auto: validate
     open-in-view: false
 
+logging:
+  structured:
+    format:
+      console: ecs
+
 server:
   port: 8080
 

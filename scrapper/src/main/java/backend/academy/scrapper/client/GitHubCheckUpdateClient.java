@@ -7,6 +7,8 @@ import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.web.reactive.function.client.ClientResponse;
@@ -15,21 +17,20 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
 
-public class GitHubClient implements Client {
-    // comments are the same as in the stackoverflow implementation
 public class GitHubCheckUpdateClient implements CheckUpdateClient {
+    private static final Logger LOG = LoggerFactory.getLogger(GitHubCheckUpdateClient.class);
     private static final String GITHUB_API_URL = "https://api.github.com";
     private static final Pattern GITHUB_URL_REGEX =
         Pattern.compile("https://github.com/(?<owner>.*)/(?<repo>.*)");
 
     private final WebClient webClient;
 
-    public GitHubClient(String gitHubApiUrl) {
-        webClient = WebClient.create(gitHubApiUrl);
     public GitHubCheckUpdateClient(String gitHubApiUrl) {
         webClient = WebClient.builder()
             .baseUrl(gitHubApiUrl)
+            .filter(logRequest())
             .filter(ExchangeFilterFunction.ofResponseProcessor(this::renderApiErrorResponse))
+            .filter(logResponse())
             .build();
     }
 
@@ -52,12 +53,13 @@ public class GitHubCheckUpdateClient implements CheckUpdateClient {
             )
             .bodyToMono(Response.class)
             .block();
-        // add 4xx, 5xx status check
 
-        long lastActivityDate = response.updated_at().toEpochSecond();
         if (response == null || response.updatedAt() == null) {
+            LOG.atInfo().setMessage("GitHub sent null response or null updated_at").log();
             return Optional.empty();
         }
+
+        long lastActivityDate = response.updatedAt().toEpochSecond();
         if (lastActivityDate > subscription.lastUpdate()) {
             subscription.lastUpdate(lastActivityDate);
             // description will appear at the next iterations,
@@ -78,7 +80,6 @@ public class GitHubCheckUpdateClient implements CheckUpdateClient {
         return "repos/" + ownerRepoApiPath;
     }
 
-    private record Response(ZonedDateTime updated_at) {
     private Mono<ClientResponse> renderApiErrorResponse(ClientResponse clientResponse) {
         if (clientResponse.statusCode().isError()) {
             LOG.atInfo().addKeyValue("api_error_response", clientResponse.statusCode()).log();
@@ -89,5 +90,32 @@ public class GitHubCheckUpdateClient implements CheckUpdateClient {
         }
         return Mono.just(clientResponse);
     }
+
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    private ExchangeFilterFunction logRequest() {
+        return ExchangeFilterFunction.ofRequestProcessor(clientRequest -> {
+            var log = LOG.atInfo().addKeyValue("request_method", clientRequest.method());
+            log.addKeyValue("request_url", clientRequest.url());
+            clientRequest.headers().forEach((name, values) ->
+                values.forEach(value -> log.addKeyValue(name, value))
+            );
+            log.log();
+            return Mono.just(clientRequest);
+        });
+    }
+
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    private ExchangeFilterFunction logResponse() {
+        return ExchangeFilterFunction.ofResponseProcessor(clientResponse -> {
+            var log = LOG.atInfo().addKeyValue("response_status", clientResponse.statusCode());
+            clientResponse.headers().asHttpHeaders().forEach((name, values) ->
+                values.forEach(value -> log.addKeyValue(name, value))
+            );
+            log.log();
+            return Mono.just(clientResponse);
+        });
+    }
+
+    private record Response(@JsonProperty("updated_at") ZonedDateTime updatedAt) {
     }
 }

@@ -1,21 +1,32 @@
-package backend.academy.bot.service;
+package backend.academy.bot.client;
 
+import backend.academy.bot.exception.ApiErrorResponse;
 import backend.academy.bot.model.Link;
-import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpMethod;
-import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.web.reactive.function.client.ClientResponse;
+import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.server.ResponseStatusException;
+import reactor.core.publisher.Mono;
 
 public class ScrapperClient {
+    private static final Logger LOG = LoggerFactory.getLogger(ScrapperClient.class);
+
     private static final String TG_CHAT_PATH = "/tg-chat/";
     private static final String LINKS_PATH = "/links?Tg-Chat-Id=";
+
     private final WebClient webClient;
 
     public ScrapperClient(String scrapperUrl) {
-        webClient = WebClient.create(scrapperUrl);
         webClient = WebClient.builder()
             .baseUrl(scrapperUrl)
+            .filter(logRequest())
             .filter(ExchangeFilterFunction.ofResponseProcessor(this::renderApiErrorResponse))
+            .filter(logResponse())
             .build();
     }
 
@@ -94,10 +105,9 @@ public class ScrapperClient {
                 )
             )
             .bodyToMono(Link.class)
-            .map(Optional::of)
-            .onErrorReturn(Optional.empty())
             .block();
     }
+
     private Mono<ClientResponse> renderApiErrorResponse(ClientResponse clientResponse) {
         if (clientResponse.statusCode().isError()) {
             LOG.atInfo().addKeyValue("api_error_response", clientResponse.statusCode()).log();
@@ -107,5 +117,30 @@ public class ScrapperClient {
                 )));
         }
         return Mono.just(clientResponse);
+    }
+
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    private ExchangeFilterFunction logRequest() {
+        return ExchangeFilterFunction.ofRequestProcessor(clientRequest -> {
+            var log = LOG.atInfo().addKeyValue("request_method", clientRequest.method());
+            log.addKeyValue("request_url", clientRequest.url());
+            clientRequest.headers().forEach((name, values) ->
+                values.forEach(value -> log.addKeyValue(name, value))
+            );
+            log.log();
+            return Mono.just(clientRequest);
+        });
+    }
+
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    private ExchangeFilterFunction logResponse() {
+        return ExchangeFilterFunction.ofResponseProcessor(clientResponse -> {
+            var log = LOG.atInfo().addKeyValue("response_status", clientResponse.statusCode());
+            clientResponse.headers().asHttpHeaders().forEach((name, values) ->
+                values.forEach(value -> log.addKeyValue(name, value))
+            );
+            log.log();
+            return Mono.just(clientResponse);
+        });
     }
 }
