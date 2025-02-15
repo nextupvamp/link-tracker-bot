@@ -5,8 +5,6 @@ import backend.academy.bot.model.ChatState;
 import backend.academy.bot.model.ChatStateData;
 import backend.academy.bot.model.Link;
 import backend.academy.bot.repository.ChatStateRepository;
-import com.pengrad.telegrambot.model.Message;
-import com.pengrad.telegrambot.model.Update;
 import java.util.Collections;
 import java.util.Set;
 import lombok.AllArgsConstructor;
@@ -29,35 +27,34 @@ public class MessageHandler {
     private final ChatStateRepository chatStateRepository;
     private final ScrapperClient scrapperClient;
 
-    public String handle(Update update) {
-        Message message = update.message();
-        long chatId = message.chat().id();
-        String[] tokens = message.text().split(" ");
+    public String handle(long chatId, String text) {
+        String[] tokens = text.split(" ");
         String command = tokens[0].toLowerCase();
 
         if (command.equals(START_COMMAND)) {
             return handleStart(chatId);
         }
 
-        var chatData = chatStateRepository.findById(chatId);
+        // to avoid modernizer warning about isPresent use
+        var chatData = chatStateRepository.findById(chatId).orElse(null);
 
-        if (chatData.isPresent() && chatData.get().chatState() == ChatState.DEFAULT) {
+        if (chatData != null && chatData.chatState() == ChatState.DEFAULT) {
             return switch (command) {
-                // TODO MAKE HELP FILE
+                    // TODO MAKE HELP FILE
                 case HELP_COMMAND -> "There's some help for you.";
-                case TRACK_COMMAND -> handleTrack(chatData.get(), tokens);
+                case TRACK_COMMAND -> handleTrack(chatData, tokens);
                 case UNTRACK_COMMAND -> handleUntrack(chatId, tokens);
                 case LIST_COMMAND -> handleList(chatId);
                 default -> "Unknown command. Enter " + HELP_COMMAND + " to see actual commands.";
             };
-        } else if (chatData.isPresent()) {
+        } else if (chatData != null) { // not default state
             if (command.equals(CANCEL_COMMAND)) {
-                return finishAdding(chatId, chatData.get());
+                return finishAdding(chatId, chatData);
             }
-            return switch (chatData.get().chatState()) {
-                case ENTERING_TAGS -> handleTags(chatData.get(), tokens);
-                case ENTERING_FILTERS -> handleFilters(chatId, chatData.get(), tokens);
-                default -> throw new IllegalStateException("Unexpected state: " + chatData.get());
+            return switch (chatData.chatState()) {
+                case ENTERING_TAGS -> handleTags(chatData, tokens);
+                case ENTERING_FILTERS -> handleFilters(chatId, chatData, tokens);
+                default -> throw new IllegalStateException("Unexpected state: " + chatData);
             };
         } else {
             return "Bot isn't started. Enter " + START_COMMAND;
@@ -79,7 +76,7 @@ public class MessageHandler {
             if (e.getStatusCode().is5xxServerError()) {
                 return NOT_AVAILABLE_MESSAGE;
             }
-            return String.format(ERROR_RESPONSE_FORMAT, "create new chat.");
+            return String.format(ERROR_RESPONSE_FORMAT, "create new chat");
         }
     }
 
@@ -124,8 +121,7 @@ public class MessageHandler {
         chatStateData.currentEditedLink(new Link(tokens[1]));
         chatStateData.chatState(ChatState.ENTERING_TAGS);
 
-        return "Link " + tokens[1] + " has been added.\n" +
-            "You can add tags or finish adding with " + CANCEL_COMMAND;
+        return "Link " + tokens[1] + " has been added.\n" + "You can add tags or finish adding with " + CANCEL_COMMAND;
     }
 
     private String handleUntrack(long chatId, String[] tokens) {
@@ -138,13 +134,15 @@ public class MessageHandler {
             return "Link " + removedLink.url() + " has been removed.";
         } catch (ResponseStatusException e) {
             var httpStatusCode = e.getStatusCode();
-            if (httpStatusCode.is5xxServerError()) {
+            var status = HttpStatus.resolve(httpStatusCode.value());
+            // consider that if we can't get status then the service isn't available
+            if (httpStatusCode.is5xxServerError() || status == null) {
                 return NOT_AVAILABLE_MESSAGE;
             }
-            var status = HttpStatus.resolve(httpStatusCode.value());
             return switch (status) {
-                case HttpStatus.BAD_REQUEST -> String.format(ERROR_RESPONSE_FORMAT, "untrack link.");
-                case HttpStatus.NOT_FOUND -> "Link not found. Try " + LIST_COMMAND + " to see your actual tracked links.";
+                case HttpStatus.BAD_REQUEST -> String.format(ERROR_RESPONSE_FORMAT, "untrack link");
+                case HttpStatus.NOT_FOUND -> "Link not found. Try " + LIST_COMMAND
+                        + " to see your actual tracked links.";
                 default -> throw new IllegalStateException("Unexpected value: " + status);
             };
         }
@@ -182,7 +180,7 @@ public class MessageHandler {
             if (e.getStatusCode().is5xxServerError()) {
                 return NOT_AVAILABLE_MESSAGE;
             }
-            return String.format(ERROR_RESPONSE_FORMAT, "get list of links.");
+            return String.format(ERROR_RESPONSE_FORMAT, "get list of links");
         }
     }
 }

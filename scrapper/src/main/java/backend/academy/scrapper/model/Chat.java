@@ -1,11 +1,11 @@
 package backend.academy.scrapper.model;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
 @RequiredArgsConstructor
 @Getter
@@ -19,4 +19,3 @@ public class Chat {
         return links.stream().filter(it -> it.equals(example)).findFirst();
     }
 }
-

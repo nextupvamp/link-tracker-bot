@@ -36,16 +36,20 @@ public class ScheduledUpdateNotifier {
 
         var subscriptions = subscriptionRepository.findAll();
         for (var subscription : subscriptions) {
-            var update = switch (subscription.site()) {
-                case GITHUB -> gitHubClient.checkUpdates(subscription);
-                case STACKOVERFLOW -> stackOverflowClient.checkUpdates(subscription);
-            };
+            var update =
+                    switch (subscription.site()) {
+                            // to avoid modernizer warning about isPresent use
+                        case GITHUB -> gitHubClient.checkUpdates(subscription).orElse(null);
+                        case STACKOVERFLOW -> stackOverflowClient
+                                .checkUpdates(subscription)
+                                .orElse(null);
+                    };
 
-            if (update.isPresent()) {
-                var unpackedUpdate = update.get();
-                var unpackedSubscription = unpackedUpdate.subscription();
-                List<Long> subscribersId = subscription.subscribers().stream().map(Chat::id).toList();
-                updates.add(new LinkUpdate(0, unpackedSubscription.url(), unpackedUpdate.description(), subscribersId));
+            if (update != null) {
+                var currentSubscription = update.subscription();
+                List<Long> subscribersId =
+                        currentSubscription.subscribers().stream().map(Chat::id).toList();
+                updates.add(new LinkUpdate(0, currentSubscription.url(), update.description(), subscribersId));
             }
         }
 

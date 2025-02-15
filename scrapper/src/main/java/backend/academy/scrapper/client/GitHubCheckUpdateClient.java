@@ -20,18 +20,17 @@ import reactor.core.publisher.Mono;
 public class GitHubCheckUpdateClient implements CheckUpdateClient {
     private static final Logger LOG = LoggerFactory.getLogger(GitHubCheckUpdateClient.class);
     private static final String GITHUB_API_URL = "https://api.github.com";
-    private static final Pattern GITHUB_URL_REGEX =
-        Pattern.compile("https://github.com/(?<owner>.*)/(?<repo>.*)");
+    private static final Pattern GITHUB_URL_REGEX = Pattern.compile("https://github.com/(?<owner>.*)/(?<repo>.*)");
 
     private final WebClient webClient;
 
     public GitHubCheckUpdateClient(String gitHubApiUrl) {
         webClient = WebClient.builder()
-            .baseUrl(gitHubApiUrl)
-            .filter(logRequest())
-            .filter(ExchangeFilterFunction.ofResponseProcessor(this::renderApiErrorResponse))
-            .filter(logResponse())
-            .build();
+                .baseUrl(gitHubApiUrl)
+                .filter(logRequest())
+                .filter(ExchangeFilterFunction.ofResponseProcessor(this::renderApiErrorResponse))
+                .filter(logResponse())
+                .build();
     }
 
     // required by specification
@@ -42,20 +41,18 @@ public class GitHubCheckUpdateClient implements CheckUpdateClient {
     @Override
     public Optional<Update> checkUpdates(Subscription subscription) {
         Response response = webClient
-            .get()
-            .uri(getOwnerRepoApiPath(subscription.url()))
-            .retrieve()
-            .onStatus(HttpStatusCode::isError, resp -> resp
-                .bodyToMono(ApiErrorResponse.class)
-                .flatMap(error -> Mono.error(
-                    new ResponseStatusException(HttpStatus.valueOf(error.code())))
-                )
-            )
-            .bodyToMono(Response.class)
-            .block();
+                .get()
+                .uri(getOwnerRepoApiPath(subscription.url()))
+                .retrieve()
+                .onStatus(HttpStatusCode::isError, resp -> resp.bodyToMono(ApiErrorResponse.class)
+                        .flatMap(error -> Mono.error(new ResponseStatusException(HttpStatus.valueOf(error.code())))))
+                .bodyToMono(Response.class)
+                .block();
 
         if (response == null || response.updatedAt() == null) {
-            LOG.atInfo().setMessage("GitHub sent null response or null updated_at").log();
+            LOG.atInfo()
+                    .setMessage("GitHub sent null response or null updated_at")
+                    .log();
             return Optional.empty();
         }
 

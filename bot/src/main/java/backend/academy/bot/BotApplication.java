@@ -31,14 +31,17 @@ public class BotApplication {
         TelegramBot bot = new TelegramBot(botConfig.telegramToken());
         bot.setUpdatesListener(updates -> {
             updates.forEach(update -> {
-                    if (update.message() != null) {
-                        long id = update.message().chat().id();
-                        var reply = messageHandler.handle(update);
-                        bot.execute(new SendMessage(id, reply));
-                        LOG.atInfo().setMessage("message_sent").addKeyValue(String.valueOf(id), reply).log();
-                    }
+                if (update.message() != null) {
+                    long id = update.message().chat().id();
+                    var reply = messageHandler.handle(
+                            update.message().chat().id(), update.message().text());
+                    bot.execute(new SendMessage(id, reply));
+                    LOG.atInfo()
+                            .setMessage("message_sent")
+                            .addKeyValue(String.valueOf(id), reply)
+                            .log();
                 }
-            );
+            });
             return UpdatesListener.CONFIRMED_UPDATES_ALL;
         });
         return bot;

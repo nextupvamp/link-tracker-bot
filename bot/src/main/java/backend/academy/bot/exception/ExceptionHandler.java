@@ -16,14 +16,13 @@ public class ExceptionHandler {
         HttpRequestMethodNotSupportedException.class,
     })
     public ResponseEntity<?> handleIllegalArgumentException(Exception e) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-            ApiErrorResponse.builder()
-                .description("Incorrect request method or parameters")
-                .code(400)
-                .exceptionName("Bad Request")
-                .exceptionMessage(e.getMessage())
-                .stackTrace(e.getStackTrace())
-                .build()
-        );
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiErrorResponse.builder()
+                        .description("Incorrect request method or parameters")
+                        .code(400)
+                        .exceptionName("Bad Request")
+                        .exceptionMessage(e.getMessage())
+                        .stackTrace(e.getStackTrace())
+                        .build());
     }
 }

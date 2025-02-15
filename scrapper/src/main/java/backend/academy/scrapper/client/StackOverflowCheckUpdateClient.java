@@ -19,18 +19,18 @@ import reactor.core.publisher.Mono;
 public class StackOverflowCheckUpdateClient implements CheckUpdateClient {
     private static final Logger LOG = LoggerFactory.getLogger(StackOverflowCheckUpdateClient.class);
     private static final Pattern STACK_OVERFLOW_URL_REGEX =
-        Pattern.compile("https://stackoverflow\\.com/questions/(?<id>[0-9]+)/.*");
+            Pattern.compile("https://stackoverflow\\.com/questions/(?<id>[0-9]+)/.*");
     private static final String STACK_EXCHANGE_API_URL = "https://api.stackexchange.com/2.2";
 
     private final WebClient webClient;
 
     public StackOverflowCheckUpdateClient(String stackExchangeApiUrl) {
         webClient = WebClient.builder()
-            .baseUrl(stackExchangeApiUrl)
-            .filter(logRequest())
-            .filter(ExchangeFilterFunction.ofResponseProcessor(this::renderApiErrorResponse))
-            .filter(logResponse())
-            .build();
+                .baseUrl(stackExchangeApiUrl)
+                .filter(logRequest())
+                .filter(ExchangeFilterFunction.ofResponseProcessor(this::renderApiErrorResponse))
+                .filter(logResponse())
+                .build();
     }
 
     // required by specification
@@ -41,17 +41,13 @@ public class StackOverflowCheckUpdateClient implements CheckUpdateClient {
     @Override
     public Optional<Update> checkUpdates(Subscription subscription) {
         Response response = webClient
-            .get()
-            .uri(getQuestionApiPath(subscription.url()))
-            .retrieve()
-            .onStatus(HttpStatusCode::isError, resp -> resp
-                .bodyToMono(ApiErrorResponse.class)
-                .flatMap(error -> Mono.error(
-                    new ResponseStatusException(HttpStatus.valueOf(error.code())))
-                )
-            )
-            .bodyToMono(Response.class)
-            .block();
+                .get()
+                .uri(getQuestionApiPath(subscription.url()))
+                .retrieve()
+                .onStatus(HttpStatusCode::isError, resp -> resp.bodyToMono(ApiErrorResponse.class)
+                        .flatMap(error -> Mono.error(new ResponseStatusException(HttpStatus.valueOf(error.code())))))
+                .bodyToMono(Response.class)
+                .block();
 
         if (response == null || response.items() == null) {
             LOG.atInfo().setMessage("StackOverflow sent null response").log();
@@ -116,9 +112,7 @@ public class StackOverflowCheckUpdateClient implements CheckUpdateClient {
         });
     }
 
-    private record Response(Item[] items) {
-    }
+    private record Response(Item[] items) {}
 
-    private record Item(@JsonProperty("last_activity_date") long lastActivityDate) {
-    }
+    private record Item(@JsonProperty("last_activity_date") long lastActivityDate) {}
 }

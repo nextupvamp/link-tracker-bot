@@ -21,7 +21,9 @@ public class BotController {
     @PostMapping("updates")
     @SneakyThrows
     public void postUpdates(@RequestBody LinkUpdate linkUpdate) {
-        LOG.atInfo().addKeyValue("request", MAPPER.writeValueAsString(linkUpdate)).log();
+        LOG.atInfo()
+                .addKeyValue("request", MAPPER.writeValueAsString(linkUpdate))
+                .log();
         updateSender.sendUpdates(linkUpdate);
     }
 }

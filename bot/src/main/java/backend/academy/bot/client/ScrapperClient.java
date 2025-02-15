@@ -23,122 +23,105 @@ public class ScrapperClient {
 
     public ScrapperClient(String scrapperUrl) {
         webClient = WebClient.builder()
-            .baseUrl(scrapperUrl)
-            .filter(logRequest())
-            .filter(ExchangeFilterFunction.ofResponseProcessor(this::renderApiErrorResponse))
-            .filter(logResponse())
-            .build();
+                .baseUrl(scrapperUrl)
+                .filter(logRequest())
+                .filter(ExchangeFilterFunction.ofResponseProcessor(this::renderApiErrorResponse))
+                .filter(logResponse())
+                .build();
     }
 
     public void addChat(long chatId) {
         webClient
-            .post()
-            .uri(TG_CHAT_PATH + chatId)
-            .retrieve()
-            .onStatus(HttpStatusCode::isError, response -> response
-                .bodyToMono(ApiErrorResponse.class)
-                .flatMap(error -> Mono.error(
-                    new ResponseStatusException(HttpStatus.valueOf(error.code())))
-                )
-            )
-            .bodyToMono(Link.class)
-            .block();
+                .post()
+                .uri(TG_CHAT_PATH + chatId)
+                .retrieve()
+                .onStatus(HttpStatusCode::isError, response -> response.bodyToMono(ApiErrorResponse.class)
+                        .flatMap(error -> Mono.error(new ResponseStatusException(HttpStatus.valueOf(error.code())))))
+                .bodyToMono(Link.class)
+                .block();
     }
 
     // not required by the specification but required to say that this client
     // can use all the functionality of the scrapper service
     public void deleteChat(long chatId) {
-        webClient.delete()
-            .uri(TG_CHAT_PATH + chatId)
-            .retrieve()
-            .onStatus(HttpStatusCode::isError, response -> response
-                .bodyToMono(ApiErrorResponse.class)
-                .flatMap(error -> Mono.error(
-                    new ResponseStatusException(HttpStatus.valueOf(error.code())))
-                )
-            )
-            .bodyToMono(Link.class)
-            .block();
+        webClient
+                .delete()
+                .uri(TG_CHAT_PATH + chatId)
+                .retrieve()
+                .onStatus(HttpStatusCode::isError, response -> response.bodyToMono(ApiErrorResponse.class)
+                        .flatMap(error -> Mono.error(new ResponseStatusException(HttpStatus.valueOf(error.code())))))
+                .bodyToMono(Link.class)
+                .block();
     }
 
     public LinkSet getAllLinks(long chatId) {
         return webClient
-            .get()
-            .uri(LINKS_PATH + chatId)
-            .retrieve()
-            .onStatus(HttpStatusCode::isError, response -> response
-                .bodyToMono(ApiErrorResponse.class)
-                .flatMap(error -> Mono.error(
-                    new ResponseStatusException(HttpStatus.valueOf(error.code())))
-                )
-            )
-            .bodyToMono(LinkSet.class)
-            .block();
+                .get()
+                .uri(LINKS_PATH + chatId)
+                .retrieve()
+                .onStatus(HttpStatusCode::isError, response -> response.bodyToMono(ApiErrorResponse.class)
+                        .flatMap(error -> Mono.error(new ResponseStatusException(HttpStatus.valueOf(error.code())))))
+                .bodyToMono(LinkSet.class)
+                .block();
     }
 
     public void addLink(long chatId, Link link) {
         webClient
-            .post()
-            .uri(LINKS_PATH + chatId)
-            .bodyValue(link)
-            .retrieve()
-            .onStatus(HttpStatusCode::isError, response -> response
-                .bodyToMono(ApiErrorResponse.class)
-                .flatMap(error -> Mono.error(
-                    new ResponseStatusException(HttpStatus.valueOf(error.code())))
-                )
-            )
-            .bodyToMono(Link.class)
-            .block();
+                .post()
+                .uri(LINKS_PATH + chatId)
+                .bodyValue(link)
+                .retrieve()
+                .onStatus(HttpStatusCode::isError, response -> response.bodyToMono(ApiErrorResponse.class)
+                        .flatMap(error -> Mono.error(new ResponseStatusException(HttpStatus.valueOf(error.code())))))
+                .bodyToMono(Link.class)
+                .block();
     }
 
     public Link removeLink(long chatId, Link link) {
         return webClient
-            .method(HttpMethod.DELETE)
-            .uri(LINKS_PATH + chatId)
-            .bodyValue(link)
-            .retrieve()
-            .onStatus(HttpStatusCode::isError, response -> response
-                .bodyToMono(ApiErrorResponse.class)
-                .flatMap(error -> Mono.error(
-                    new ResponseStatusException(HttpStatus.valueOf(error.code())))
-                )
-            )
-            .bodyToMono(Link.class)
-            .block();
+                .method(HttpMethod.DELETE)
+                .uri(LINKS_PATH + chatId)
+                .bodyValue(link)
+                .retrieve()
+                .onStatus(HttpStatusCode::isError, response -> response.bodyToMono(ApiErrorResponse.class)
+                        .flatMap(error -> Mono.error(new ResponseStatusException(HttpStatus.valueOf(error.code())))))
+                .bodyToMono(Link.class)
+                .block();
     }
 
     private Mono<ClientResponse> renderApiErrorResponse(ClientResponse clientResponse) {
         if (clientResponse.statusCode().isError()) {
-            LOG.atInfo().addKeyValue("api_error_response", clientResponse.statusCode()).log();
-            return clientResponse.bodyToMono(ApiErrorResponse.class)
-                .flatMap(_ -> Mono.error(new ResponseStatusException(
-                    clientResponse.statusCode()
-                )));
+            LOG.atInfo()
+                    .addKeyValue("api_error_response", clientResponse.statusCode())
+                    .log();
+            return clientResponse
+                    .bodyToMono(ApiErrorResponse.class)
+                    .flatMap(ignored -> Mono.error(new ResponseStatusException(clientResponse.statusCode())));
         }
         return Mono.just(clientResponse);
     }
 
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     private ExchangeFilterFunction logRequest() {
         return ExchangeFilterFunction.ofRequestProcessor(clientRequest -> {
-            var log = LOG.atInfo().addKeyValue("request_method", clientRequest.method());
-            log.addKeyValue("request_url", clientRequest.url());
-            clientRequest.headers().forEach((name, values) ->
-                values.forEach(value -> log.addKeyValue(name, value))
-            );
+            var log = LOG.atInfo()
+                    .addKeyValue("request_method", clientRequest.method())
+                    .addKeyValue("request_url", clientRequest.url());
+            var headers = clientRequest.headers().asSingleValueMap();
+            for (var entry : headers.entrySet()) {
+                log = log.addKeyValue(entry.getKey(), entry.getValue());
+            }
             log.log();
             return Mono.just(clientRequest);
         });
     }
 
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     private ExchangeFilterFunction logResponse() {
         return ExchangeFilterFunction.ofResponseProcessor(clientResponse -> {
             var log = LOG.atInfo().addKeyValue("response_status", clientResponse.statusCode());
-            clientResponse.headers().asHttpHeaders().forEach((name, values) ->
-                values.forEach(value -> log.addKeyValue(name, value))
-            );
+            var headers = clientResponse.headers().asHttpHeaders().asSingleValueMap();
+            for (var entry : headers.entrySet()) {
+                log = log.addKeyValue(entry.getKey(), entry.getValue());
+            }
             log.log();
             return Mono.just(clientResponse);
         });

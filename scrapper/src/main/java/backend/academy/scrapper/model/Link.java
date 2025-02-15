@@ -4,13 +4,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 public record Link(
-    // id will be assigned later by persistence provider,
-    // but now it's unused
-    long id,
-    String url,
-    Set<String> tags,
-    Set<String> filters
-) {
+        // id will be assigned later by persistence provider,
+        // but now it's unused
+        long id, String url, Set<String> tags, Set<String> filters) {
     public Link(String url) {
         this(0, url, new HashSet<>(), new HashSet<>());
     }

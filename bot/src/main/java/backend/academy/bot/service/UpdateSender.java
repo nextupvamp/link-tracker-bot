@@ -13,9 +13,7 @@ public class UpdateSender {
 
     public void sendUpdates(LinkUpdate linkUpdate) {
         // notify all the subscribers about update on the one url
-        String message = "New update on " +
-            linkUpdate.url() + " : " +
-            linkUpdate.description();
+        String message = "New update on " + linkUpdate.url() + " : " + linkUpdate.description();
 
         var chats = linkUpdate.tgChatsId();
         for (var id : chats) {

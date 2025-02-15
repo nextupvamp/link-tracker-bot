@@ -10,9 +10,12 @@ public class Subscription {
     private final String url;
     private final Site site;
     private final Set<Chat> subscribers = new HashSet<>();
-    @Setter private boolean updated;
+
+    @Setter
+    private boolean updated;
     // consider last update on create time because we don't observe updates before subscription
-    @Setter private long lastUpdate = System.currentTimeMillis() / 1000; // to seconds
+    @Setter
+    private long lastUpdate = System.currentTimeMillis() / 1000; // to seconds
 
     public Subscription(String url, Site site) {
         this.url = url;
