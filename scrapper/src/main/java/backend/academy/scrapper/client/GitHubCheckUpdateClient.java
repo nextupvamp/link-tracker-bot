@@ -78,41 +78,16 @@ public class GitHubCheckUpdateClient implements CheckUpdateClient {
     }
 
     private Mono<ClientResponse> renderApiErrorResponse(ClientResponse clientResponse) {
-        if (clientResponse.statusCode().isError()) {
-            LOG.atInfo().addKeyValue("api_error_response", clientResponse.statusCode()).log();
-            return clientResponse.bodyToMono(ApiErrorResponse.class)
-                .flatMap(_ -> Mono.error(new ResponseStatusException(
-                    clientResponse.statusCode()
-                )));
-        }
-        return Mono.just(clientResponse);
+        return ClientUtils.renderApiErrorResponse(clientResponse, LOG);
     }
 
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     private ExchangeFilterFunction logRequest() {
-        return ExchangeFilterFunction.ofRequestProcessor(clientRequest -> {
-            var log = LOG.atInfo().addKeyValue("request_method", clientRequest.method());
-            log.addKeyValue("request_url", clientRequest.url());
-            clientRequest.headers().forEach((name, values) ->
-                values.forEach(value -> log.addKeyValue(name, value))
-            );
-            log.log();
-            return Mono.just(clientRequest);
-        });
+        return ClientUtils.logRequest(LOG);
     }
 
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     private ExchangeFilterFunction logResponse() {
-        return ExchangeFilterFunction.ofResponseProcessor(clientResponse -> {
-            var log = LOG.atInfo().addKeyValue("response_status", clientResponse.statusCode());
-            clientResponse.headers().asHttpHeaders().forEach((name, values) ->
-                values.forEach(value -> log.addKeyValue(name, value))
-            );
-            log.log();
-            return Mono.just(clientResponse);
-        });
+        return ClientUtils.logResponse(LOG);
     }
 
-    private record Response(@JsonProperty("updated_at") ZonedDateTime updatedAt) {
-    }
+    private record Response(@JsonProperty("updated_at") ZonedDateTime updatedAt) {}
 }
