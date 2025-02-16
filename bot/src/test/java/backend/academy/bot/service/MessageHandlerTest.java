@@ -142,6 +142,5 @@ public class MessageHandlerTest {
                         + "    tea:pot" + LF
                         + LF,
                 reply);
-        assertTrue(reply.contains("url"));
     }
 }
