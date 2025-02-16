@@ -1,12 +1,14 @@
 package backend.academy.scrapper.client;
 
 import backend.academy.scrapper.exception.ApiErrorResponse;
+import lombok.experimental.UtilityClass;
 import org.slf4j.Logger;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
 
+@UtilityClass
 public class ClientUtils {
     public static ExchangeFilterFunction logRequest(Logger logger) {
         return ExchangeFilterFunction.ofRequestProcessor(clientRequest -> {
