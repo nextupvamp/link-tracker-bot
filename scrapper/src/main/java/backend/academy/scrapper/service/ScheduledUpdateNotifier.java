@@ -31,7 +31,7 @@ public class ScheduledUpdateNotifier {
         updates.forEach(botClient::sendUpdate);
     }
 
-    private List<LinkUpdate> getUpdates() {
+    List<LinkUpdate> getUpdates() {
         var updates = new ArrayList<LinkUpdate>();
 
         var subscriptions = subscriptionRepository.findAll();
