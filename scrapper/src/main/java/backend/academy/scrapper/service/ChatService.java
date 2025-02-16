@@ -20,7 +20,7 @@ public class ChatService {
     private static final Supplier<NoSuchElementException> CHAT_NOT_FOUND =
             () -> new NoSuchElementException("Chat not found");
     private static final Pattern STACKOVERFLOW_URL_PATTERN =
-            Pattern.compile("https://stackoverflow.com/questions/[0-9]+/.[^/]+");
+            Pattern.compile("https://stackoverflow.com/questions/[0-9]+/?.[^/]+?");
     private static final Pattern GITHUB_URL_PATTERN = Pattern.compile("https://github.com/.[^/]+/.[^/]+");
 
     private final ChatRepository chatRepository;
