@@ -41,6 +41,7 @@ public class MessageHandlerTest {
     @ParameterizedTest
     @ValueSource(strings = {"command", "", "/starts", "/", "/startt"})
     public void testWrongCommands(String command) {
+        doReturn(Optional.of(new ChatStateData())).when(repo).findById(anyLong());
         String reply = messageHandler.handle(0L, command);
         Assertions.assertTrue(reply.startsWith("Unknown command"));
     }

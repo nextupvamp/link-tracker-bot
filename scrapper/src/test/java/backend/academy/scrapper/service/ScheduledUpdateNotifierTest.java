@@ -7,6 +7,8 @@ import backend.academy.scrapper.model.Chat;
 import backend.academy.scrapper.model.Site;
 import backend.academy.scrapper.model.Subscription;
 import backend.academy.scrapper.repository.SubscriptionRepository;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
@@ -54,8 +56,13 @@ public class ScheduledUpdateNotifierTest {
 
         var updates = notifier.getUpdates();
 
+        // test fails sometimes because of the order of elements
+        // that's why I sort the list there
+        var firstList = new ArrayList<>(updates.getFirst().tgChatsId());
+        Collections.sort(firstList);
+
         assertAll(
-                () -> assertEquals(List.of(1L, 2L), updates.getFirst().tgChatsId()),
+                () -> assertEquals(List.of(1L, 2L), firstList),
                 () -> assertEquals(List.of(3L), updates.getLast().tgChatsId()));
     }
 }
