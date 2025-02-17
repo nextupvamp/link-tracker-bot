@@ -115,7 +115,7 @@ public enum Command implements BotCommand {
     // he isn't at entering tags or filters
     // stage his text will be treated
     // as unknown command. Otherwise, his text
-    // will be treated as tags or filters.
+    // will be treated as tags or filters
     TRACK_STAGE {
         @Override
         public String execute(
