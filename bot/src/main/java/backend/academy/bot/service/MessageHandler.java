@@ -21,6 +21,7 @@ public class MessageHandler {
                 return command.execute(chatId, tokens, chatStateRepository, scrapperClient);
             }
         }
+        // this command responds for plain text
         return Command.TRACK_STAGE.execute(chatId, tokens, chatStateRepository, scrapperClient);
     }
 }
