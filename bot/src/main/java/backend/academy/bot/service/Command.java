@@ -21,7 +21,7 @@ public enum Command implements BotCommand {
                 try {
                     scrapperClient.addChat(chatId);
                     chatStateRepository.save(chatId, new ChatStateData());
-                    return "Hello! You can see the bot's commands by entering /help";
+                    return "Hello! You can see the bot's commands by entering " + HELP.command();
                 } catch (ResponseStatusException e) {
                     if (e.getStatusCode().is5xxServerError()) {
                         return Commons.NOT_AVAILABLE;
@@ -31,7 +31,7 @@ public enum Command implements BotCommand {
             } else if (newChat.chatState() != ChatState.DEFAULT) {
                 return Commons.NOT_APPLICABLE;
             } else {
-                return "You've already started! Enter /help to see bot's commands.";
+                return "You've already started! Enter " + HELP.command() + " to see bot's commands.";
             }
         }
 
@@ -89,13 +89,14 @@ public enum Command implements BotCommand {
             }
 
             if (tokens.length != 2) {
-                return "Wrong format. Try \"/track <url>\"";
+                return "Wrong format. Try \"" + TRACK.command() + " <url>\"";
             }
 
             chatStateData.currentEditedLink(new Link(tokens[1]));
             chatStateData.chatState(ChatState.ENTERING_TAGS);
 
-            return "Link " + tokens[1] + " has been added.\n" + "You can add tags or finish adding with /cancel";
+            return "Link " + tokens[1] + " has been added.\n" + "You can add tags or finish adding with "
+                    + CANCEL.command();
         }
 
         @Override
@@ -109,6 +110,12 @@ public enum Command implements BotCommand {
         }
     },
 
+    // This command works with plain text.
+    // It recognizes user's stage and if
+    // he isn't at entering tags or filters
+    // stage his text will be treated
+    // as unknown command. Otherwise, his text
+    // will be treated as tags or filters.
     TRACK_STAGE {
         @Override
         public String execute(
@@ -135,7 +142,7 @@ public enum Command implements BotCommand {
                     tags.forEach(it -> reply.append(it).append('\n'));
 
                     chatStateData.chatState(ChatState.ENTERING_FILTERS);
-                    reply.append("You can add filters or finish adding with /cancel");
+                    reply.append("You can add filters or finish adding with ").append(CANCEL.command());
                     yield reply.toString();
                 }
                 case ENTERING_FILTERS -> {
@@ -185,7 +192,7 @@ public enum Command implements BotCommand {
             }
 
             if (tokens.length != 2) {
-                return "Wrong format. Try \"/untrack <url>\".";
+                return "Wrong format. Try \"" + UNTRACK.command() + " <url>\".";
             }
 
             try {
@@ -200,7 +207,8 @@ public enum Command implements BotCommand {
                 }
                 return switch (status) {
                     case HttpStatus.BAD_REQUEST -> String.format(Commons.ERROR_RESPONSE_FORMAT, "untrack link");
-                    case HttpStatus.NOT_FOUND -> "Link not found. Try /list" + " to see your actual tracked links.";
+                    case HttpStatus.NOT_FOUND -> "Link not found. Try " + LIST.command()
+                            + " to see your actual tracked links.";
                     default -> throw new IllegalStateException("Unexpected value: " + status);
                 };
             }
@@ -262,7 +270,7 @@ public enum Command implements BotCommand {
             try {
                 var links = scrapperClient.getAllLinks(chatId).links();
                 if (links == null || links.isEmpty()) {
-                    return "No links found. Try /track to add new tracked links.";
+                    return "No links found. Try " + TRACK.command() + " to add new tracked links.";
                 }
 
                 StringBuilder reply = new StringBuilder();
@@ -290,7 +298,7 @@ public enum Command implements BotCommand {
     };
 
     static class Commons {
-        static final String UNKNOWN_COMMAND = "Unknown command. Try /help too se actual commands.";
+        static final String UNKNOWN_COMMAND = "Unknown command. Try " + HELP.command() + " too se actual commands.";
         private static final String ERROR_RESPONSE_FORMAT = "An error occurred while trying to %s. Try again later.";
         private static final String NOT_AVAILABLE = "Service is not available. Try again later";
         private static final String NOT_APPLICABLE = "The command is not applicable on this stage";
