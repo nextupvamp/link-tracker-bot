@@ -1,0 +1,15 @@
+services:
+  bot:
+    build: /bot
+    depends_on:
+      - scrapper
+    ports:
+      - "8080:8080"
+    env_file:
+      - bot/bot.env
+    network_mode: host
+  scrapper:
+    build: /scrapper
+    ports:
+      - "8081:8081"
+    network_mode: host
