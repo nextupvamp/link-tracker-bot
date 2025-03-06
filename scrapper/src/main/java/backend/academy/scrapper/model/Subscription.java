@@ -21,4 +21,8 @@ public class Subscription {
         this.url = url;
         this.site = site;
     }
+
+    public void update() {
+        lastUpdate = System.currentTimeMillis() / 1000;
+    }
 }

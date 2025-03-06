@@ -47,6 +47,8 @@ public class ScheduledUpdateNotifier {
 
             if (update != null) {
                 var currentSubscription = update.subscription();
+                currentSubscription.update();
+                subscriptionRepository.save(currentSubscription);
                 List<Long> subscribersId =
                         currentSubscription.subscribers().stream().map(Chat::id).toList();
                 updates.add(new LinkUpdate(0, currentSubscription.url(), update.description(), subscribersId));
