@@ -1,22 +1,40 @@
-package backend.academy.bot.exception;
+package backend.academy.scrapper.exception;
 
+import backend.academy.scrapper.dto.ApiErrorResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.NoSuchElementException;
 import lombok.SneakyThrows;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 
+@Slf4j
 @ControllerAdvice
-public class ExceptionHandler {
-    private static final Logger LOG = LoggerFactory.getLogger(ExceptionHandler.class);
+public class ScrapperControllerAdvice {
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
-    @org.springframework.web.bind.annotation.ExceptionHandler({
+    @ExceptionHandler(NoSuchElementException.class)
+    @SneakyThrows
+    public ResponseEntity<?> handleNoSuchElementException(NoSuchElementException e) {
+        var response = ApiErrorResponse.builder()
+                .description("Resource not found")
+                .code(404)
+                .exceptionName("Not found")
+                .exceptionMessage(e.getMessage())
+                .stackTrace(e.getStackTrace())
+                .build();
+
+        log.atInfo().addKeyValue("error", MAPPER.writeValueAsString(response)).log();
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
+
+    @ExceptionHandler({
         IllegalArgumentException.class,
         HttpMessageNotReadableException.class,
         HttpMediaTypeNotSupportedException.class,
@@ -32,7 +50,7 @@ public class ExceptionHandler {
                 .stackTrace(e.getStackTrace())
                 .build();
 
-        LOG.atInfo().addKeyValue("error", MAPPER.writeValueAsString(response)).log();
+        log.atInfo().addKeyValue("error", MAPPER.writeValueAsString(response)).log();
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
