@@ -11,7 +11,7 @@ import org.testcontainers.utility.DockerImageName;
 
 // isolated from the "bot" module's containers!
 @TestConfiguration(proxyBeanMethods = false)
-class TestcontainersConfiguration {
+public class TestcontainersConfiguration {
 
     @Bean
     @RestartScope

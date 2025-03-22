@@ -7,19 +7,33 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import backend.academy.scrapper.service.LinkUpdate;
+import backend.academy.scrapper.ScrapperConfigProperties;
+import backend.academy.scrapper.dto.LinkUpdate;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import java.util.ArrayList;
 import org.junit.Rule;
 import org.junit.Test;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.ResponseStatusException;
 
-public class BotClientTest {
+public class BotHttpClientTest {
     @Rule
-    public WireMockRule wireMockRule = new WireMockRule(8080);
+    public WireMockRule wireMockRule = new WireMockRule(1489);
 
-    private final BotClient botClient = new BotClient("http://localhost:8080");
+    private final ScrapperConfigProperties config = new ScrapperConfigProperties(
+        null,
+        null,
+        "http://localhost:1489",
+        null,
+        null,
+        229,
+        null,
+        null,
+        229
+    );
+
+    private final BotHttpClient botHttpClient = new BotHttpClient(WebClient.builder(), config);
 
     // basically, any of 4xx and 5xx statuses will cause a ResponseStatusException with appropriate
     // status code in it
@@ -33,7 +47,7 @@ public class BotClientTest {
 
         ResponseStatusException exception = assertThrows(
                 ResponseStatusException.class,
-                () -> botClient.sendUpdate(new LinkUpdate(0, "", "", new ArrayList<>())));
+                () -> botHttpClient.sendUpdate(new LinkUpdate("", "", "", 0, "", new ArrayList<>())));
 
         assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
     }

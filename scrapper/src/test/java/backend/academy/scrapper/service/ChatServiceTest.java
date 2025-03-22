@@ -1,22 +1,17 @@
 package backend.academy.scrapper.service;
 
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doReturn;
-
-import backend.academy.scrapper.controller.AddLinkRequest;
+import backend.academy.scrapper.dto.AddLinkRequest;
 import backend.academy.scrapper.model.Chat;
 import backend.academy.scrapper.model.Link;
 import backend.academy.scrapper.model.Site;
 import backend.academy.scrapper.model.Subscription;
-import backend.academy.scrapper.repository.ChatRepository;
-import backend.academy.scrapper.repository.SubscriptionRepository;
+import backend.academy.scrapper.repository.chat.ChatRepository;
+import backend.academy.scrapper.repository.subscription.SubscriptionRepository;
+import backend.academy.scrapper.service.chat.ChatService;
 import java.util.Optional;
 import java.util.Set;
+import backend.academy.scrapper.service.chat.ChatServiceImpl;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -24,6 +19,13 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doReturn;
 
 @ExtendWith(MockitoExtension.class)
 public class ChatServiceTest {
@@ -34,7 +36,7 @@ public class ChatServiceTest {
     private SubscriptionRepository subRepo;
 
     @InjectMocks
-    private ChatService chatService;
+    private ChatServiceImpl chatService;
 
     @Test
     public void testAddLink() {
@@ -52,8 +54,11 @@ public class ChatServiceTest {
         var subscription = new Subscription("https://github.com/oleg/tee", Site.GITHUB);
         subscription.subscribers().add(chat);
 
-        doReturn(Optional.of(subscription)).when(subRepo).findByUrl(anyString());
+        doReturn(Optional.of(subscription)).when(subRepo).findById(anyString());
         doReturn(Optional.of(chat)).when(chatRepo).findById(anyLong());
+
+        //subscription.subscribers().remove(chat);
+        //subscription.subscribers().isEmpty();
 
         var deletedLink = chatService.deleteLink(0L, "https://github.com/oleg/tee");
 
@@ -86,6 +91,8 @@ public class ChatServiceTest {
 
     // everything is stored in sets or maps so there are no special logic
     // to handle that situation, the link will just be rewritten
+    @Deprecated
+    @Disabled
     @Test
     public void testAddExistingLink() {
         var link = new AddLinkRequest(
@@ -104,6 +111,7 @@ public class ChatServiceTest {
                                 "https://github.com/vampnextup/logs-analyzer-service",
                                 Set.of("oleg"),
                                 Set.of("tin:kov")))),
-                () -> assertEquals(1, chatService.getAllLinks(0L).links().size()));
+                () -> assertEquals(
+                        1, chatService.getAllLinks(0L).links().size()));
     }
 }

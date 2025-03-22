@@ -7,7 +7,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doReturn;
 
-import backend.academy.bot.client.LinkSet;
+import backend.academy.bot.dto.LinkSet;
 import backend.academy.bot.client.ScrapperClient;
 import backend.academy.bot.model.ChatState;
 import backend.academy.bot.model.ChatStateData;

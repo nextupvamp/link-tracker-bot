@@ -1,26 +1,31 @@
 package backend.academy.scrapper.service;
 
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
-
+import backend.academy.scrapper.ScrapperConfigProperties;
 import backend.academy.scrapper.client.GitHubCheckUpdateClient;
 import backend.academy.scrapper.client.StackOverflowCheckUpdateClient;
-import backend.academy.scrapper.client.Update;
+import backend.academy.scrapper.dto.Update;
 import backend.academy.scrapper.model.Chat;
 import backend.academy.scrapper.model.Site;
 import backend.academy.scrapper.model.Subscription;
-import backend.academy.scrapper.repository.SubscriptionRepository;
+import backend.academy.scrapper.repository.subscription.SubscriptionRepository;
+import backend.academy.scrapper.service.scrapper.UpdateScrapperService;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import backend.academy.scrapper.service.scrapper.UpdateScrapperServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.doReturn;
 
 @ExtendWith(MockitoExtension.class)
 public class ScheduledUpdateNotifierTest {
@@ -33,9 +38,11 @@ public class ScheduledUpdateNotifierTest {
     @Mock
     private SubscriptionRepository subscriptionRepository;
 
-    @InjectMocks
-    private ScheduledUpdateNotifier notifier;
+    @Mock
+    private ScrapperConfigProperties config;
 
+    @InjectMocks
+    private UpdateScrapperServiceImpl scrapper;
     @Test
     public void testNotifyUsers() {
         var subA = new Subscription("a", Site.GITHUB);
@@ -46,19 +53,21 @@ public class ScheduledUpdateNotifierTest {
         subB.subscribers().add(new Chat(3L));
 
         var subscriptions = List.of(subA, subB);
+        var subscriptionsPage = new PageImpl(subscriptions);
 
-        doReturn(subscriptions).when(subscriptionRepository).findAll();
-        doReturn(Optional.of(new Update(subscriptions.getFirst(), "")))
+        doReturn(10).when(config).pageSize();
+        doReturn(subscriptionsPage).when(subscriptionRepository).findAll(PageRequest.of(0, 10));
+        doReturn(new PageImpl(List.of())).when(subscriptionRepository).findAll(PageRequest.of(1, 10));
+
+        doReturn(Optional.of(new Update(subscriptions.getFirst(), "", "", 0L, "")))
                 .when(gitHubClient)
                 .checkUpdates(any());
-        doReturn(Optional.of(new Update(subscriptions.getLast(), "")))
+        doReturn(Optional.of(new Update(subscriptions.getLast(), "", "", 0L, "")))
                 .when(stackOverflowClient)
                 .checkUpdates(any());
 
-        var updates = notifier.getUpdates();
+        var updates = scrapper.getUpdates();
 
-        // test fails sometimes because of the order of elements
-        // that's why I sort the list there
         var firstList = new ArrayList<>(updates.getFirst().tgChatsId());
         Collections.sort(firstList);
 

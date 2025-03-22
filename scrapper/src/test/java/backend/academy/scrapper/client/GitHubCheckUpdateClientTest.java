@@ -1,5 +1,14 @@
 package backend.academy.scrapper.client;
 
+import backend.academy.scrapper.ScrapperConfigProperties;
+import backend.academy.scrapper.model.Site;
+import backend.academy.scrapper.model.Subscription;
+import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import org.junit.Rule;
+import org.junit.Test;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.server.ResponseStatusException;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
@@ -7,20 +16,24 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import backend.academy.scrapper.model.Site;
-import backend.academy.scrapper.model.Subscription;
-import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
-
 public class GitHubCheckUpdateClientTest {
     @Rule
-    public WireMockRule wireMockRule = new WireMockRule(8080);
+    public WireMockRule wireMockRule = new WireMockRule(1487);
+
+    private final ScrapperConfigProperties config = new ScrapperConfigProperties(
+        null,
+        null,
+        null,
+        "http://localhost:1487",
+        null,
+        229,
+        null,
+        "repos/%s/issues?per_page=1",
+        229
+    );
 
     private final GitHubCheckUpdateClient gitHubCheckUpdateClient =
-            new GitHubCheckUpdateClient("http://localhost:8080");
+            new GitHubCheckUpdateClient(WebClient.builder(), config);
 
     // basically, any of 4xx and 5xx statuses will cause a ResponseStatusException with appropriate
     // status code in it
@@ -28,7 +41,7 @@ public class GitHubCheckUpdateClientTest {
     public void test404ResponseStatus() {
         String repoUrl = "https://github.com/user/notfoundrepo";
 
-        stubFor(get(urlEqualTo("/repos/user/notfoundrepo"))
+        stubFor(get(urlEqualTo("/repos/user/notfoundrepo/issues?per_page=1"))
                 .willReturn(aResponse()
                         .withStatus(404)
                         .withHeader("Content-Type", "application/json")
