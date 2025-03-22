@@ -14,7 +14,7 @@ public enum Command implements BotCommand {
     START {
         @Override
         public String execute(
-                long chatId, String[] tokens, ChatStateRepository chatStateRepository, ScrapperClient scrapperClient) {
+            long chatId, String[] tokens, ChatStateRepository chatStateRepository, ScrapperClient scrapperClient) {
             var newChat = chatStateRepository.findById(chatId).orElse(null);
 
             if (newChat == null) {
@@ -22,11 +22,9 @@ public enum Command implements BotCommand {
                     scrapperClient.addChat(chatId);
                     chatStateRepository.save(chatId, new ChatStateData());
                     return "Hello! You can see the bot's commands by entering " + HELP.command();
-                } catch (ResponseStatusException e) {
-                    if (e.getStatusCode().is5xxServerError()) {
-                        return Commons.NOT_AVAILABLE;
-                    }
-                    return String.format(Commons.ERROR_RESPONSE_FORMAT, "create new chat");
+                } catch (Exception e) {
+                    return Commons.NOT_AVAILABLE;
+
                 }
             } else if (newChat.chatState() != ChatState.DEFAULT) {
                 return Commons.NOT_APPLICABLE;
@@ -49,7 +47,7 @@ public enum Command implements BotCommand {
     HELP {
         @Override
         public String execute(
-                long chatId, String[] tokens, ChatStateRepository chatStateRepository, ScrapperClient scrapperClient) {
+            long chatId, String[] tokens, ChatStateRepository chatStateRepository, ScrapperClient scrapperClient) {
             var chatStateData = chatStateRepository.findById(chatId).orElse(null);
 
             if (chatStateData == null) {
@@ -77,7 +75,7 @@ public enum Command implements BotCommand {
     TRACK {
         @Override
         public String execute(
-                long chatId, String[] tokens, ChatStateRepository chatStateRepository, ScrapperClient scrapperClient) {
+            long chatId, String[] tokens, ChatStateRepository chatStateRepository, ScrapperClient scrapperClient) {
             var chatStateData = chatStateRepository.findById(chatId).orElse(null);
 
             if (chatStateData == null) {
@@ -96,7 +94,7 @@ public enum Command implements BotCommand {
             chatStateData.chatState(ChatState.ENTERING_TAGS);
 
             return "Link " + tokens[1] + " has been added.\n" + "You can add tags or finish adding with "
-                    + CANCEL.command();
+                + CANCEL.command();
         }
 
         @Override
@@ -119,7 +117,7 @@ public enum Command implements BotCommand {
     TRACK_STAGE {
         @Override
         public String execute(
-                long chatId, String[] tokens, ChatStateRepository chatStateRepository, ScrapperClient scrapperClient) {
+            long chatId, String[] tokens, ChatStateRepository chatStateRepository, ScrapperClient scrapperClient) {
             var chatStateData = chatStateRepository.findById(chatId).orElse(null);
 
             if (chatStateData == null) {
@@ -180,7 +178,7 @@ public enum Command implements BotCommand {
     UNTRACK {
         @Override
         public String execute(
-                long chatId, String[] tokens, ChatStateRepository chatStateRepository, ScrapperClient scrapperClient) {
+            long chatId, String[] tokens, ChatStateRepository chatStateRepository, ScrapperClient scrapperClient) {
             var chatStateData = chatStateRepository.findById(chatId).orElse(null);
 
             if (chatStateData == null) {
@@ -208,9 +206,11 @@ public enum Command implements BotCommand {
                 return switch (status) {
                     case HttpStatus.BAD_REQUEST -> String.format(Commons.ERROR_RESPONSE_FORMAT, "untrack link");
                     case HttpStatus.NOT_FOUND -> "Link not found. Try " + LIST.command()
-                            + " to see your actual tracked links.";
+                        + " to see your actual tracked links.";
                     default -> throw new IllegalStateException("Unexpected value: " + status);
                 };
+            } catch (Exception e) {
+                return Commons.NOT_AVAILABLE;
             }
         }
 
@@ -228,7 +228,7 @@ public enum Command implements BotCommand {
     CANCEL {
         @Override
         public String execute(
-                long chatId, String[] tokens, ChatStateRepository chatStateRepository, ScrapperClient scrapperClient) {
+            long chatId, String[] tokens, ChatStateRepository chatStateRepository, ScrapperClient scrapperClient) {
             var chatStateData = chatStateRepository.findById(chatId).orElse(null);
 
             if (chatStateData == null) {
@@ -256,7 +256,7 @@ public enum Command implements BotCommand {
     LIST {
         @Override
         public String execute(
-                long chatId, String[] tokens, ChatStateRepository chatStateRepository, ScrapperClient scrapperClient) {
+            long chatId, String[] tokens, ChatStateRepository chatStateRepository, ScrapperClient scrapperClient) {
             var chatStateData = chatStateRepository.findById(chatId).orElse(null);
 
             if (chatStateData == null) {

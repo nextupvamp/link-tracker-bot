@@ -1,6 +1,6 @@
 package backend.academy.scrapper.client;
 
-import backend.academy.scrapper.exception.ApiErrorResponse;
+import backend.academy.scrapper.dto.ApiErrorResponse;
 import lombok.experimental.UtilityClass;
 import org.slf4j.Logger;
 import org.springframework.web.reactive.function.client.ClientResponse;
