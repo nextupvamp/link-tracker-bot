@@ -1,6 +1,9 @@
 app:
   telegram-token: ${TELEGRAM_TOKEN} # env variable
   scrapper-url: "http://localhost:8081"
+  set-commands-url-format: "https://api.telegram.org/bot%s/setMyCommands"
+  tg-chat-path: "/tg-chat/"
+  link-path: "/links?Tg-Chat-Id="
 
 spring:
   application:
@@ -15,7 +18,7 @@ spring:
 logging:
   structured:
     format:
-      console: ecs
+     # console: ecs
 
 server:
   port: 8080

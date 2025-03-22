@@ -5,22 +5,31 @@ app:
     access-token: ${SO_ACCESS_TOKEN}
   bot-url: "http://localhost:8080"
   github-api-url: "https://api.github.com"
+  github-repo-issue-format: "repos/%s/issues?per_page=1"
   stack-exchange-api-url: "https://api.stackexchange.com/2.2"
+  page-size: 50
+  preview-size: 200
+  access-type: jdbc
 
 spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
   application:
     name: Scrapper
   liquibase:
     enabled: false
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: create
     open-in-view: false
 
 logging:
   structured:
     format:
-      console: ecs
+      #console: ecs
 
 server:
   port: 8081
