@@ -1,12 +1,14 @@
 package backend.academy.scrapper.controller;
 
+import backend.academy.scrapper.dto.AddLinkRequest;
+import backend.academy.scrapper.dto.LinkSet;
+import backend.academy.scrapper.dto.RemoveLinkRequest;
 import backend.academy.scrapper.model.Link;
-import backend.academy.scrapper.service.ChatService;
+import backend.academy.scrapper.service.chat.ChatService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,10 +17,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+@Slf4j
 @RestController
 @AllArgsConstructor
 public class ScrapperController {
-    private static final Logger LOG = LoggerFactory.getLogger(ScrapperController.class);
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     private final ChatService chatService;
@@ -29,7 +31,7 @@ public class ScrapperController {
             throw new IllegalArgumentException("ID cannot be negative");
         }
 
-        LOG.atInfo().addKeyValue("request id", id).log();
+        log.atInfo().addKeyValue("request id", id).log();
 
         chatService.addChat(id);
     }
@@ -40,7 +42,7 @@ public class ScrapperController {
             throw new IllegalArgumentException("ID cannot be negative");
         }
 
-        LOG.atInfo().addKeyValue("request id", id).log();
+        log.atInfo().addKeyValue("request id", id).log();
 
         chatService.deleteChat(id);
     }
@@ -51,11 +53,11 @@ public class ScrapperController {
             throw new IllegalArgumentException("ID cannot be negative");
         }
 
-        LOG.atInfo().addKeyValue("request id", id).log();
+        log.atInfo().addKeyValue("request id", id).log();
 
         var response = chatService.getAllLinks(id);
 
-        LOG.atInfo().addKeyValue("response", response).log();
+        log.atInfo().addKeyValue("response", response).log();
 
         return response;
     }
@@ -67,14 +69,14 @@ public class ScrapperController {
             throw new IllegalArgumentException("ID cannot be negative");
         }
 
-        LOG.atInfo()
+        log.atInfo()
                 .addKeyValue("request id", id)
                 .addKeyValue("request body", MAPPER.writeValueAsString(link))
                 .log();
 
         var response = chatService.addLink(id, link);
 
-        LOG.atInfo().addKeyValue("response", response).log();
+        log.atInfo().addKeyValue("response", response).log();
 
         return response;
     }
@@ -86,14 +88,14 @@ public class ScrapperController {
             throw new IllegalArgumentException("ID cannot be negative");
         }
 
-        LOG.atInfo()
+        log.atInfo()
                 .addKeyValue("request id", id)
                 .addKeyValue("request body", MAPPER.writeValueAsString(link))
                 .log();
 
         var response = chatService.deleteLink(id, link.url());
 
-        LOG.atInfo().addKeyValue("response", response).log();
+        log.atInfo().addKeyValue("response", response).log();
 
         return response;
     }
