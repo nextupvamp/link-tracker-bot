@@ -1,4 +1,4 @@
-package backend.academy.bot.exception;
+package backend.academy.scrapper.dto;
 
 import lombok.Builder;
 

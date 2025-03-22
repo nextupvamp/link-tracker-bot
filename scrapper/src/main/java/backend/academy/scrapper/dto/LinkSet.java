@@ -1,4 +1,4 @@
-package backend.academy.scrapper.controller;
+package backend.academy.scrapper.dto;
 
 import backend.academy.scrapper.model.Link;
 import java.util.Set;

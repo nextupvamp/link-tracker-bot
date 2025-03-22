@@ -1,4 +1,4 @@
-package backend.academy.bot.client;
+package backend.academy.bot.dto;
 
 import backend.academy.bot.model.Link;
 import java.util.Set;
