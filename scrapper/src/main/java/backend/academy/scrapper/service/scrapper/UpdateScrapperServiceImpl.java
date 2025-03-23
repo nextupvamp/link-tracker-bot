@@ -31,7 +31,8 @@ public class UpdateScrapperServiceImpl implements UpdateScrapperService {
             subscriptions = subscriptionRepository
                     .findAll(PageRequest.of(page++, config.pageSize()))
                     .toList();
-            for (var subscription : subscriptions) {
+
+            subscriptions.stream().parallel().forEach((subscription) -> {
                 var update =
                         switch (subscription.site()) {
                             case GITHUB -> gitHubClient
@@ -60,7 +61,7 @@ public class UpdateScrapperServiceImpl implements UpdateScrapperService {
                             .tgChatsId(subscribersId)
                             .build());
                 }
-            }
+            });
         } while (!subscriptions.isEmpty());
 
         return updates;

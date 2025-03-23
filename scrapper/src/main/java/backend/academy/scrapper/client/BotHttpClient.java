@@ -10,12 +10,13 @@ import reactor.core.publisher.Mono;
 
 @Slf4j
 public class BotHttpClient {
-    private static final String UPDATES_PATH = "/updates";
-
     private final WebClient webClient;
+    private final ScrapperConfigProperties config;
 
     public BotHttpClient(WebClient.Builder webClientBuilder, ScrapperConfigProperties config) {
-        webClient = webClientBuilder.baseUrl(config.botUrl())
+        this.config = config;
+        webClient = webClientBuilder
+                .baseUrl(config.botUrl())
                 .filter(logRequest())
                 .filter(ExchangeFilterFunction.ofResponseProcessor(this::renderApiErrorResponse))
                 .filter(logResponse())
@@ -25,7 +26,7 @@ public class BotHttpClient {
     public void sendUpdate(LinkUpdate update) {
         webClient
                 .post()
-                .uri(UPDATES_PATH)
+                .uri(config.updatesPath())
                 .bodyValue(update)
                 .retrieve()
                 .bodyToMono(String.class)

@@ -1,8 +1,8 @@
 package backend.academy.scrapper.client;
 
 import backend.academy.scrapper.ScrapperConfigProperties;
-import backend.academy.scrapper.dto.Update;
 import backend.academy.scrapper.dto.ApiErrorResponse;
+import backend.academy.scrapper.dto.Update;
 import backend.academy.scrapper.model.Subscription;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;

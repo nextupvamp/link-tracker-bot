@@ -22,16 +22,7 @@ public class BotHttpClientTest {
     public WireMockRule wireMockRule = new WireMockRule(1489);
 
     private final ScrapperConfigProperties config = new ScrapperConfigProperties(
-        null,
-        null,
-        "http://localhost:1489",
-        null,
-        null,
-        229,
-        null,
-        null,
-        229
-    );
+            null, null, "http://localhost:1489", null, null, 229, null, null, 229, "/updates");
 
     private final BotHttpClient botHttpClient = new BotHttpClient(WebClient.builder(), config);
 

@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RestController;
 @AllArgsConstructor
 public class BotController {
     private final ObjectMapper mapper;
-
     private final UpdateSender updateSender;
 
     @PostMapping("updates")

@@ -1,4 +1,4 @@
-package backend.academy.bot.exception;
+package backend.academy.bot.controller;
 
 import backend.academy.bot.dto.ApiErrorResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;

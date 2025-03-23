@@ -1,4 +1,4 @@
-package backend.academy.scrapper.exception;
+package backend.academy.scrapper.controller;
 
 import backend.academy.scrapper.dto.ApiErrorResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;

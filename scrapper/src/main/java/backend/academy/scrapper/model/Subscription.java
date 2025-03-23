@@ -1,5 +1,6 @@
 package backend.academy.scrapper.model;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -25,7 +26,7 @@ public class Subscription {
     @Enumerated(value = EnumType.STRING)
     private Site site;
 
-    @OneToMany(fetch = FetchType.EAGER)
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(
             name = "subscriber",
             inverseJoinColumns = @JoinColumn(name = "chat_id"),

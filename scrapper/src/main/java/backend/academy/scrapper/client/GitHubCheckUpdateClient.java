@@ -1,8 +1,8 @@
 package backend.academy.scrapper.client;
 
 import backend.academy.scrapper.ScrapperConfigProperties;
-import backend.academy.scrapper.dto.Update;
 import backend.academy.scrapper.dto.ApiErrorResponse;
+import backend.academy.scrapper.dto.Update;
 import backend.academy.scrapper.model.Subscription;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.ZonedDateTime;
@@ -63,13 +63,13 @@ public class GitHubCheckUpdateClient implements CheckUpdateClient {
 
     private Issue[] getIssues(Subscription subscription) {
         return webClient
-            .get()
-            .uri(getRepoIssuePath(subscription.url()))
-            .retrieve()
-            .onStatus(HttpStatusCode::isError, resp -> resp.bodyToMono(ApiErrorResponse.class)
-                .flatMap(error -> Mono.error(new ResponseStatusException(HttpStatus.valueOf(error.code())))))
-            .bodyToMono(Issue[].class)
-            .block();
+                .get()
+                .uri(getRepoIssuePath(subscription.url()))
+                .retrieve()
+                .onStatus(HttpStatusCode::isError, resp -> resp.bodyToMono(ApiErrorResponse.class)
+                        .flatMap(error -> Mono.error(new ResponseStatusException(HttpStatus.valueOf(error.code())))))
+                .bodyToMono(Issue[].class)
+                .block();
     }
 
     private String getRepoIssuePath(String repoUrl) {

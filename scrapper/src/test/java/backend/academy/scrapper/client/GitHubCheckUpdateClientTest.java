@@ -1,5 +1,12 @@
 package backend.academy.scrapper.client;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import backend.academy.scrapper.ScrapperConfigProperties;
 import backend.academy.scrapper.model.Site;
 import backend.academy.scrapper.model.Subscription;
@@ -9,28 +16,13 @@ import org.junit.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.ResponseStatusException;
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
-import static org.junit.Assert.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class GitHubCheckUpdateClientTest {
     @Rule
     public WireMockRule wireMockRule = new WireMockRule(1487);
 
     private final ScrapperConfigProperties config = new ScrapperConfigProperties(
-        null,
-        null,
-        null,
-        "http://localhost:1487",
-        null,
-        229,
-        null,
-        "repos/%s/issues?per_page=1",
-        229
-    );
+            null, null, null, "http://localhost:1487", null, 229, null, "repos/%s/issues?per_page=1", 229, "/updates");
 
     private final GitHubCheckUpdateClient gitHubCheckUpdateClient =
             new GitHubCheckUpdateClient(WebClient.builder(), config);

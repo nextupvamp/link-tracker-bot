@@ -3,19 +3,16 @@ package backend.academy.bot.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doReturn;
 
-import backend.academy.bot.dto.LinkSet;
 import backend.academy.bot.client.ScrapperClient;
+import backend.academy.bot.dto.LinkSet;
+import backend.academy.bot.model.ChatData;
 import backend.academy.bot.model.ChatState;
-import backend.academy.bot.model.ChatStateData;
 import backend.academy.bot.model.Link;
-import backend.academy.bot.repository.ChatStateRepository;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.Optional;
 import java.util.Set;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -31,9 +28,6 @@ public class MessageHandlerTest {
     private static final String LF = "\n";
 
     @Mock
-    private ChatStateRepository repo;
-
-    @Mock
     private ScrapperClient scrapper;
 
     @InjectMocks
@@ -42,7 +36,7 @@ public class MessageHandlerTest {
     @ParameterizedTest
     @ValueSource(strings = {"command", "", "/starts", "/", "/startt"})
     public void testWrongCommands(String command) {
-        doReturn(Optional.of(new ChatStateData())).when(repo).findById(anyLong());
+        doReturn(new ChatData(0L, ChatState.DEFAULT, null, null)).when(scrapper).getChatData(anyLong());
         String reply = messageHandler.handle(0L, command);
         Assertions.assertTrue(reply.startsWith("Unknown command"));
     }
@@ -50,40 +44,37 @@ public class MessageHandlerTest {
     @ParameterizedTest
     @ValueSource(strings = {"/start", "/track", "/track url", "/untrack", "/help"})
     public void testCorrectCommands(String command) {
-        doReturn(Optional.of(new ChatStateData())).when(repo).findById(anyLong());
+        doReturn(new ChatData(0L, ChatState.DEFAULT, null, null)).when(scrapper).getChatData(anyLong());
         String reply = messageHandler.handle(0L, command);
         assertFalse(reply.startsWith("Unknown command"));
     }
 
     @Test
     public void testCancelCommandEnteringFilters() { // command requires non-default state
-        var state = new ChatStateData();
-        state.chatState(ChatState.ENTERING_FILTERS);
-        doReturn(Optional.of(state)).when(repo).findById(anyLong());
+        var state = new ChatData(0L, ChatState.ENTERING_FILTERS, null, null);
+        doReturn(state).when(scrapper).getChatData(anyLong());
         String reply = messageHandler.handle(0L, "/cancel");
         assertFalse(reply.startsWith("Unknown command"));
     }
 
     @Test
     public void testCancelCommandEnteringTags() { // command requires non-default state
-        var state = new ChatStateData();
-        state.chatState(ChatState.ENTERING_TAGS);
-        doReturn(Optional.of(state)).when(repo).findById(anyLong());
+        var state = new ChatData(0L, ChatState.ENTERING_TAGS, null, null);
+        doReturn(state).when(scrapper).getChatData(anyLong());
         String reply = messageHandler.handle(0L, "/cancel");
         assertFalse(reply.startsWith("Unknown command"));
     }
 
     @Test
     public void testUntrackUrlCommand() { // command requires scrapper response
-        doReturn(Optional.of(new ChatStateData())).when(repo).findById(anyLong());
-        doReturn(new Link("url")).when(scrapper).removeLink(anyLong(), any(Link.class));
+        doReturn(new ChatData(0L, ChatState.DEFAULT, null, null)).when(scrapper).getChatData(anyLong());
         String reply = messageHandler.handle(0L, "/untrack url");
         assertFalse(reply.startsWith("Unknown command"));
     }
 
     @Test
     public void testListCommand() { // command requires scrapper response
-        doReturn(Optional.of(new ChatStateData())).when(repo).findById(anyLong());
+        doReturn(new ChatData(0L, ChatState.DEFAULT, null, null)).when(scrapper).getChatData(anyLong());
         doReturn(new LinkSet(new HashSet<>(), 0)).when(scrapper).getAllLinks(anyLong());
         String reply = messageHandler.handle(0L, "/list");
         assertFalse(reply.startsWith("Unknown command"));
@@ -93,7 +84,7 @@ public class MessageHandlerTest {
     public void testFullList() {
         var link = new Link("url");
         var links = Set.of(link);
-        doReturn(Optional.of(new ChatStateData())).when(repo).findById(anyLong());
+        doReturn(new ChatData(0L, ChatState.DEFAULT, null, null)).when(scrapper).getChatData(anyLong());
         doReturn(new LinkSet(links, 1)).when(scrapper).getAllLinks(anyLong());
         String reply = messageHandler.handle(0L, "/list");
         assertTrue(reply.contains("url"));
@@ -101,7 +92,7 @@ public class MessageHandlerTest {
 
     @Test
     public void testEmptyList() {
-        doReturn(Optional.of(new ChatStateData())).when(repo).findById(anyLong());
+        doReturn(new ChatData(0L, ChatState.DEFAULT, null, null)).when(scrapper).getChatData(anyLong());
         doReturn(new LinkSet(new HashSet<>(), 0)).when(scrapper).getAllLinks(anyLong());
         String reply = messageHandler.handle(0L, "/list");
         assertFalse(reply.startsWith("Unknown command"));
@@ -117,13 +108,13 @@ public class MessageHandlerTest {
         var filters = new LinkedHashSet<String>();
         filters.add("oleg:t");
         filters.add("tea:pot");
-        var link2 = new Link("belt", tags, filters);
+        var link2 = new Link(null, "belt", tags, filters);
 
         var links = new LinkedHashSet<Link>();
         links.add(link1);
         links.add(link2);
 
-        doReturn(Optional.of(new ChatStateData())).when(repo).findById(anyLong());
+        doReturn(new ChatData(0L, ChatState.DEFAULT, null, null)).when(scrapper).getChatData(anyLong());
         doReturn(new LinkSet(links, 1)).when(scrapper).getAllLinks(anyLong());
         String reply = messageHandler.handle(0L, "/list");
         assertEquals(

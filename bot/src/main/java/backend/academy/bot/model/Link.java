@@ -3,9 +3,9 @@ package backend.academy.bot.model;
 import java.util.HashSet;
 import java.util.Set;
 
-public record Link(String url, Set<String> tags, Set<String> filters) {
+public record Link(Long id, String url, Set<String> tags, Set<String> filters) {
     public Link(String url) {
-        this(url, new HashSet<>(), new HashSet<>());
+        this(null, url, new HashSet<>(), new HashSet<>());
     }
 
     @Override

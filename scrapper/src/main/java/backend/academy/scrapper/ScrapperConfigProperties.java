@@ -15,7 +15,7 @@ public record ScrapperConfigProperties(
         int pageSize,
         String accessType,
         String githubRepoIssueFormat,
-        int previewSize
-) {
+        int previewSize,
+        String updatesPath) {
     public record StackOverflowCredentials(@NotEmpty String key, @NotEmpty String accessToken) {}
 }

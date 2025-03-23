@@ -7,10 +7,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Import;
 
 @Slf4j
-@Import({
-    BotConfig.class,
-    ScrapperConfig.class
-})
+@Import({BotConfig.class, ScrapperConfig.class})
 @SpringBootApplication
 @EnableConfigurationProperties({BotConfigProperties.class})
 public class BotApplication {

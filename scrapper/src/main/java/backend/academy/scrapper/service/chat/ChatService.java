@@ -1,8 +1,8 @@
 package backend.academy.scrapper.service.chat;
 
 import backend.academy.scrapper.dto.AddLinkRequest;
+import backend.academy.scrapper.dto.ChatData;
 import backend.academy.scrapper.dto.LinkSet;
-import backend.academy.scrapper.model.Link;
 import backend.academy.scrapper.model.Site;
 import java.util.NoSuchElementException;
 import java.util.function.Supplier;
@@ -13,11 +13,15 @@ public interface ChatService {
 
     void addChat(long id);
 
-    Link addLink(long id, AddLinkRequest link);
+    void addLink(long id, AddLinkRequest link);
 
-    Link deleteLink(long id, String url);
+    void deleteLink(long id, String url);
 
     LinkSet getAllLinks(long id);
+
+    ChatData getChatData(long id);
+
+    void updateChatData(ChatData chatData);
 
     Supplier<NoSuchElementException> CHAT_NOT_FOUND = () -> new NoSuchElementException("Chat not found");
     Pattern STACKOVERFLOW_URL_PATTERN = Pattern.compile("https://stackoverflow.com/questions/[0-9]+/?.[^/]+?");

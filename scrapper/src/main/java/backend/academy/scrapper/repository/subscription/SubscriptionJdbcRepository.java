@@ -56,16 +56,16 @@ public class SubscriptionJdbcRepository implements SubscriptionRepository {
         subscribers.forEach(chatRepository::save);
 
         jdbcClient
-            .sql(
-                "insert into subscription (updated, last_update, site, url) values (?, ?, ?, ?) on conflict (url) do update set updated = ?, last_update = ?, site = ?")
-            .param(subscription.updated())
-            .param(subscription.lastUpdate())
-            .param(subscription.site().name())
-            .param(subscription.url())
-            .param(subscription.updated())
-            .param(subscription.lastUpdate())
-            .param(subscription.site().name())
-            .update();
+                .sql(
+                        "insert into subscription (updated, last_update, site, url) values (?, ?, ?, ?) on conflict (url) do update set updated = ?, last_update = ?, site = ?")
+                .param(subscription.updated())
+                .param(subscription.lastUpdate())
+                .param(subscription.site().name())
+                .param(subscription.url())
+                .param(subscription.updated())
+                .param(subscription.lastUpdate())
+                .param(subscription.site().name())
+                .update();
 
         subscribers.forEach(it -> jdbcClient
                 .sql("insert into subscriber (chat_id, subscription) values (?, ?)")
@@ -78,6 +78,10 @@ public class SubscriptionJdbcRepository implements SubscriptionRepository {
 
     @Override
     public void delete(Subscription subscription) {
+        jdbcClient
+                .sql("delete from subscriber where subscription = ?")
+                .param(subscription.url())
+                .update();
         jdbcClient
                 .sql("delete from subscription where url = ?")
                 .param(subscription.url())

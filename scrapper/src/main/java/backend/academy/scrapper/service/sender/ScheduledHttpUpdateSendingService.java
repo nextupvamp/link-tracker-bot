@@ -1,6 +1,5 @@
 package backend.academy.scrapper.service.sender;
 
-import backend.academy.scrapper.ScrapperConfigProperties;
 import backend.academy.scrapper.client.BotHttpClient;
 import backend.academy.scrapper.service.scrapper.UpdateScrapperService;
 import lombok.AllArgsConstructor;

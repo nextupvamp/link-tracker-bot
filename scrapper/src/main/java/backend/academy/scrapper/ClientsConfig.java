@@ -20,7 +20,8 @@ public class ClientsConfig {
     }
 
     @Bean
-    public StackOverflowCheckUpdateClient stackOverflowClient(WebClient.Builder builder, ScrapperConfigProperties scrapperConfig) {
+    public StackOverflowCheckUpdateClient stackOverflowClient(
+            WebClient.Builder builder, ScrapperConfigProperties scrapperConfig) {
         return new StackOverflowCheckUpdateClient(builder, scrapperConfig);
     }
 }

@@ -1,6 +1,7 @@
 package backend.academy.scrapper.repository.chat;
 
 import backend.academy.scrapper.model.Chat;
+import backend.academy.scrapper.model.ChatState;
 import backend.academy.scrapper.model.Link;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -40,47 +41,41 @@ public class ChatJdbcRepository implements ChatRepository {
                 .query(CHAT_ROW_MAPPER)
                 .optional();
 
-        chat.ifPresent(it -> it.links(new HashSet<>(links)));
+        chat.ifPresent(it -> {
+            it.links(new HashSet<>(links));
+            var currentEditedLink = jdbcClient
+                    .sql("select * from link where id = (select curr_edited_link from chat where id = ?)")
+                    .param(id)
+                    .query(LINK_ROW_MAPPER)
+                    .optional();
+            it.currentEditedLink(currentEditedLink.orElse(null));
+        });
 
         return chat;
     }
 
     @Override
     public Chat save(Chat chat) {
-        jdbcClient.sql("insert into chat (id) values (?) on conflict do nothing").param(chat.id()).update();
+        jdbcClient
+                .sql("insert into chat (id, state) values (?, ?) on conflict (id) do update set state = ?")
+                .param(chat.id())
+                .param(chat.state().name())
+                .param(chat.state().name())
+                .update();
+
+        if (chat.currentEditedLink() != null) {
+            long id = saveLink(chat, chat.currentEditedLink());
+            jdbcClient
+                    .sql("update chat set curr_edited_link = ? where id = ?")
+                    .param(id)
+                    .param(chat.id())
+                    .update();
+        }
+
+        removeNotActualLinks(chat);
 
         for (var link : chat.links()) {
-            long linkId =
-                    (long) jdbcClient.sql("select nextval ('link_seq')").query().singleValue();
-
-            jdbcClient
-                    .sql("insert into link (id, url) values (?, ?) on conflict (id) do update set url = ?")
-                    .param(linkId)
-                    .param(link.url())
-                    .param(link.url())
-                    .update();
-
-            jdbcClient
-                    .sql("insert into chat_links (chat_id, link_id) values (?, ?)")
-                    .param(chat.id())
-                    .param(linkId)
-                    .update();
-
-            for (var tag : link.tags()) {
-                jdbcClient
-                        .sql("insert into link_tags (link, tag) values (?, ?)")
-                        .param(linkId)
-                        .param(tag)
-                        .update();
-            }
-
-            for (var filter : link.filters()) {
-                jdbcClient
-                        .sql("insert into link_filters (link, filter) values (?, ?)")
-                        .param(linkId)
-                        .param(filter)
-                        .update();
-            }
+            saveLink(chat, link);
         }
 
         return chat;
@@ -116,6 +111,68 @@ public class ChatJdbcRepository implements ChatRepository {
         link.filters(filters);
     }
 
+    private long saveLink(Chat chat, Link link) {
+        var result = jdbcClient
+                .sql("select id from link where url = ?")
+                .param(link.url())
+                .query()
+                .optionalValue();
+
+        long linkId;
+        if (result.isPresent()) {
+            linkId = result.map(it -> (long) it).get();
+        } else {
+            linkId =
+                    (long) jdbcClient.sql("select nextval ('link_seq')").query().singleValue();
+        }
+
+        jdbcClient
+                .sql("insert into link (id, url) values (?, ?) on conflict (id) do update set url = ?")
+                .param(linkId)
+                .param(link.url())
+                .param(link.url())
+                .update();
+
+        jdbcClient
+                .sql("insert into chat_links (chat_id, link_id) values (?, ?) on conflict do nothing")
+                .param(chat.id())
+                .param(linkId)
+                .update();
+
+        for (var tag : link.tags()) {
+            jdbcClient
+                    .sql("insert into link_tags (link, tag) values (?, ?)")
+                    .param(linkId)
+                    .param(tag)
+                    .update();
+        }
+
+        for (var filter : link.filters()) {
+            jdbcClient
+                    .sql("insert into link_filters (link, filter) values (?, ?)")
+                    .param(linkId)
+                    .param(filter)
+                    .update();
+        }
+
+        return linkId;
+    }
+
+    private void removeNotActualLinks(Chat chat) {
+        var persistentLinks = new HashSet<>(jdbcClient
+                .sql("select * from link l left join chat_links cl on l.id = cl.link_id where cl.chat_id = ?")
+                .param(chat.id())
+                .query(LINK_ROW_MAPPER)
+                .list());
+        var actualLinks = chat.links();
+
+        for (var link : persistentLinks) {
+            if (!actualLinks.contains(link)) {
+                jdbcClient.sql("delete from link where id = ?").param(link.id()).update();
+            }
+        }
+    }
+
     public static class LinkRowMapper implements RowMapper<Link> {
         @Override
         public Link mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -131,6 +188,7 @@ public class ChatJdbcRepository implements ChatRepository {
         public Chat mapRow(ResultSet rs, int rowNum) throws SQLException {
             Chat chat = new Chat();
             chat.id(rs.getLong("id"));
+            chat.state(ChatState.valueOf(rs.getString("state")));
             return chat;
         }
     }

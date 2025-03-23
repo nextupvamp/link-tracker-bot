@@ -45,14 +45,14 @@ public class BotConfig {
             long id = update.message().chat().id();
 
             var reply = messageHandler.handle(
-                update.message().chat().id(), update.message().text());
+                    update.message().chat().id(), update.message().text());
 
             bot.execute(new SendMessage(id, reply));
 
             log.atInfo()
-                .setMessage("message_sent")
-                .addKeyValue(String.valueOf(id), reply)
-                .log();
+                    .setMessage("message_sent")
+                    .addKeyValue(String.valueOf(id), reply)
+                    .log();
         }
     }
 
