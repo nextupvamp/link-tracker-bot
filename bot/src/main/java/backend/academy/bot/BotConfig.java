@@ -2,7 +2,6 @@ package backend.academy.bot;
 
 import backend.academy.bot.dto.BotCommandDto;
 import backend.academy.bot.dto.SetCommandsRequest;
-import backend.academy.bot.service.Command;
 import backend.academy.bot.service.MessageHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pengrad.telegrambot.TelegramBot;
@@ -29,7 +28,7 @@ public class BotConfig {
     public TelegramBot bot(BotConfigProperties botConfigProperties, MessageHandler messageHandler) {
         TelegramBot bot = new TelegramBot(botConfigProperties.telegramToken());
 
-        uploadCommands(botConfigProperties);
+        uploadCommands(messageHandler, botConfigProperties);
 
         bot.setUpdatesListener(updates -> {
             updates.forEach(update -> handleUpdate(messageHandler, update, bot));
@@ -56,10 +55,10 @@ public class BotConfig {
         }
     }
 
-    private void uploadCommands(BotConfigProperties properties) {
+    private void uploadCommands(MessageHandler messageHandler, BotConfigProperties properties) {
         List<BotCommandDto> commandDtos = new ArrayList<>();
 
-        for (var value : Command.values()) {
+        for (var value : messageHandler.commands()) {
             if (value.command() != null) {
                 commandDtos.add(new BotCommandDto(value.command(), value.description()));
             }
