@@ -12,6 +12,7 @@ import java.util.regex.Pattern;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
+import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -19,15 +20,14 @@ import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
 
 @Slf4j
+@Component
 public class StackOverflowCheckUpdateClient implements CheckUpdateClient {
     private static final Pattern STACK_OVERFLOW_URL_REGEX =
             Pattern.compile("https://stackoverflow\\.com/questions/(?<id>[0-9]+)/.*");
 
     private final WebClient webClient;
-    private final ScrapperConfigProperties config;
 
     public StackOverflowCheckUpdateClient(WebClient.Builder webClientBuilder, ScrapperConfigProperties config) {
-        this.config = config;
         webClient = webClientBuilder
                 .baseUrl(config.stackExchangeApiUrl())
                 .filter(logRequest())
@@ -58,7 +58,7 @@ public class StackOverflowCheckUpdateClient implements CheckUpdateClient {
                     .subscription(subscription)
                     .time(answer.lastEditDate())
                     .topic(question.title())
-                    .preview(answer.body().substring(0, config.previewSize()))
+                    .preview(answer.body())
                     .build());
         }
 

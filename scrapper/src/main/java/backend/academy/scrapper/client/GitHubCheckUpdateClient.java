@@ -12,6 +12,7 @@ import java.util.regex.Pattern;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
+import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -19,6 +20,7 @@ import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
 
 @Slf4j
+@Component
 public class GitHubCheckUpdateClient implements CheckUpdateClient {
     private static final Pattern GITHUB_URL_REGEX = Pattern.compile("https://github.com/(?<owner>.*)/(?<repo>.*)");
 
@@ -50,7 +52,7 @@ public class GitHubCheckUpdateClient implements CheckUpdateClient {
         if (lastActivityDate > subscription.lastUpdate()) {
             subscription.lastUpdate(lastActivityDate);
             return Optional.of(Update.builder()
-                    .preview(issue.body().substring(0, config.previewSize()))
+                    .preview(issue.body())
                     .topic(issue.title())
                     .time(lastActivityDate)
                     .username(issue.user().login())

@@ -1,29 +1,29 @@
 package backend.academy.scrapper.service.scrapper;
 
 import backend.academy.scrapper.ScrapperConfigProperties;
-import backend.academy.scrapper.client.GitHubCheckUpdateClient;
-import backend.academy.scrapper.client.StackOverflowCheckUpdateClient;
 import backend.academy.scrapper.dto.LinkUpdate;
 import backend.academy.scrapper.model.Chat;
 import backend.academy.scrapper.model.Subscription;
 import backend.academy.scrapper.repository.subscription.SubscriptionRepository;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @AllArgsConstructor
 @Service
 public class UpdateScrapperServiceImpl implements UpdateScrapperService {
     private final ScrapperConfigProperties config;
-    private final GitHubCheckUpdateClient gitHubClient;
-    private final StackOverflowCheckUpdateClient stackOverflowClient;
+    private final UpdateCheckersChain updateCheckersChain;
     private final SubscriptionRepository subscriptionRepository;
 
     @Override
+    @Transactional
     public List<LinkUpdate> getUpdates() {
-        var updates = new ArrayList<LinkUpdate>();
+        var updates = new ConcurrentLinkedDeque<LinkUpdate>();
 
         int page = 0;
         List<Subscription> subscriptions;
@@ -33,15 +33,7 @@ public class UpdateScrapperServiceImpl implements UpdateScrapperService {
                     .toList();
 
             subscriptions.stream().parallel().forEach((subscription) -> {
-                var update =
-                        switch (subscription.site()) {
-                            case GITHUB -> gitHubClient
-                                    .checkUpdates(subscription)
-                                    .orElse(null);
-                            case STACKOVERFLOW -> stackOverflowClient
-                                    .checkUpdates(subscription)
-                                    .orElse(null);
-                        };
+                var update = updateCheckersChain.checkUpdates(subscription);
 
                 if (update != null) {
                     var currentSubscription = update.subscription();
@@ -53,7 +45,7 @@ public class UpdateScrapperServiceImpl implements UpdateScrapperService {
                             .toList();
 
                     updates.add(LinkUpdate.builder()
-                            .preview(update.preview())
+                            .preview(formatPreview(update.preview(), config.previewSize()))
                             .time(update.time())
                             .topic(update.topic())
                             .url(update.subscription().url())
@@ -64,6 +56,13 @@ public class UpdateScrapperServiceImpl implements UpdateScrapperService {
             });
         } while (!subscriptions.isEmpty());
 
-        return updates;
+        return new ArrayList<>(updates);
+    }
+
+    private String formatPreview(String source, int size) {
+        if (source.length() > size) {
+            return source.substring(0, size) + "...";
+        }
+        return source;
     }
 }
