@@ -13,6 +13,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 @ConditionalOnProperty(prefix = "app", name = "access-type", havingValue = "jdbc")
 @Repository
@@ -24,6 +25,7 @@ public class ChatJdbcRepository implements ChatRepository {
     private final JdbcClient jdbcClient;
 
     @Override
+    @Transactional(readOnly = true)
     public Optional<Chat> findById(long id) {
         var links = jdbcClient
                 .sql("select * from link l left join chat_links cl on l.id = cl.link_id where cl.chat_id = ?")
@@ -55,6 +57,7 @@ public class ChatJdbcRepository implements ChatRepository {
     }
 
     @Override
+    @Transactional
     public Chat save(Chat chat) {
         jdbcClient
                 .sql("insert into chat (id, state) values (?, ?) on conflict (id) do update set state = ?")
@@ -82,6 +85,7 @@ public class ChatJdbcRepository implements ChatRepository {
     }
 
     @Override
+    @Transactional
     public void delete(Chat chat) {
         jdbcClient.sql("delete from chat where id = ?").param(chat.id()).update();
     }
@@ -118,13 +122,8 @@ public class ChatJdbcRepository implements ChatRepository {
                 .query()
                 .optionalValue();
 
-        long linkId;
-        if (result.isPresent()) {
-            linkId = result.map(it -> (long) it).get();
-        } else {
-            linkId =
-                    (long) jdbcClient.sql("select nextval ('link_seq')").query().singleValue();
-        }
+        long linkId = result.map(it -> (long) it).orElseGet(() ->
+                (long) jdbcClient.sql("select nextval ('link_seq')").query().singleValue());
 
         jdbcClient
                 .sql("insert into link (id, url) values (?, ?) on conflict (id) do update set url = ?")

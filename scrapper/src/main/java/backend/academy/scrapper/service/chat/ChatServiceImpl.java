@@ -15,6 +15,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @AllArgsConstructor
 @Service
@@ -23,6 +24,7 @@ public class ChatServiceImpl implements ChatService {
     private final SubscriptionRepository subscriptionRepository;
 
     @Override
+    @Transactional
     public void deleteChat(long id) {
         var chat = chatRepository.findById(id).orElseThrow(CHAT_NOT_FOUND);
         chatRepository.delete(chat);
@@ -37,6 +39,7 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
+    @Transactional
     public void updateChatData(ChatData chatData) {
         var chat = chatRepository.findById(chatData.id()).orElseThrow(CHAT_NOT_FOUND);
         chat.state(chatData.state());
@@ -63,6 +66,7 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
+    @Transactional
     public void addLink(long id, AddLinkRequest link) {
         Chat chat = chatRepository.findById(id).orElseThrow(CHAT_NOT_FOUND);
 
@@ -84,6 +88,7 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
+    @Transactional
     public void deleteLink(long id, String url) {
         Chat chat = chatRepository.findById(id).orElseThrow(CHAT_NOT_FOUND);
         var link = chat.findLink(url).orElseThrow(() -> new NoSuchElementException("Link not found"));

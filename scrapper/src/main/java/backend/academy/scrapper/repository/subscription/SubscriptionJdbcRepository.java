@@ -14,6 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 @ConditionalOnProperty(prefix = "app", name = "access-type", havingValue = "jdbc")
 @Repository
@@ -25,6 +26,7 @@ public class SubscriptionJdbcRepository implements SubscriptionRepository {
     private final JdbcClient jdbcClient;
 
     @Override
+    @Transactional(readOnly = true)
     public Optional<Subscription> findById(String id) {
         var subscription = jdbcClient
                 .sql("select * from subscription where url = ?")
@@ -37,6 +39,7 @@ public class SubscriptionJdbcRepository implements SubscriptionRepository {
     }
 
     @Override
+    @Transactional
     public Page<Subscription> findAll(Pageable pageable) {
         var subscriptions = jdbcClient
                 .sql("select * from subscription offset ? limit ?")
@@ -51,6 +54,7 @@ public class SubscriptionJdbcRepository implements SubscriptionRepository {
     }
 
     @Override
+    @Transactional
     public Subscription save(Subscription subscription) {
         var subscribers = subscription.subscribers();
         subscribers.forEach(chatRepository::save);
@@ -77,6 +81,7 @@ public class SubscriptionJdbcRepository implements SubscriptionRepository {
     }
 
     @Override
+    @Transactional
     public void delete(Subscription subscription) {
         jdbcClient
                 .sql("delete from subscriber where subscription = ?")
