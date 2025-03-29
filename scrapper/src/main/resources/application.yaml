@@ -10,7 +10,7 @@ app:
   updates-path:  "/updates"
   page-size: 50
   preview-size: 200
-  access-type: jdbc
+  access-type: jpa
 
 spring:
   datasource:
@@ -21,10 +21,13 @@ spring:
   application:
     name: Scrapper
   liquibase:
-    enabled: false
+    enabled: true
+    drop-first: false
+    change-log: classpath:db/changelog/db.changelog-master.xml
+    default-schema: public
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: validate
     open-in-view: false
 
 logging:
