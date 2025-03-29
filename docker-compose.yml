@@ -1,4 +1,11 @@
 services:
+  postgresql:
+    build: /postgres
+    image: "postgres:17-alpine"
+    ports:
+      - 5432:5432
+    network_mode: host
+
   bot:
     build: /bot
     depends_on:
