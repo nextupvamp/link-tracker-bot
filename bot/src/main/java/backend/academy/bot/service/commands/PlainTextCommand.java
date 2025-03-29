@@ -22,14 +22,14 @@ public class PlainTextCommand implements BotCommand {
             chatData = scrapperClient.getChatData(chatId);
         } catch (ResponseStatusException e) {
             if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
-                return BotCommand.NOT_STARTED;
+                return NOT_STARTED;
             } else {
-                return BotCommand.NOT_AVAILABLE;
+                return NOT_AVAILABLE;
             }
         }
 
         if (chatData.state() == ChatState.DEFAULT) {
-            return BotCommand.UNKNOWN_COMMAND;
+            return UNKNOWN_COMMAND;
         }
 
         return switch (chatData.state()) {
@@ -48,7 +48,7 @@ public class PlainTextCommand implements BotCommand {
                 try {
                     scrapperClient.updateChat(chatData);
                 } catch (ResponseStatusException e) {
-                    yield BotCommand.NOT_AVAILABLE;
+                    yield NOT_AVAILABLE;
                 }
 
                 reply.append("You can add filters or finish adding with /cancel");
@@ -68,6 +68,9 @@ public class PlainTextCommand implements BotCommand {
                         yield "Wrong format \"" + token + "\". Try \"<key1>:<value1> <key2>:<value2>...\"";
                     }
                 }
+
+                chatData.links().remove(currentLink);
+                chatData.links().add(currentLink);
 
                 reply.append(BotCommand.finishAdding(chatId, chatData, scrapperClient));
                 yield reply.toString();

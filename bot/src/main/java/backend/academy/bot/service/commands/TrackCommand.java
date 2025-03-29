@@ -21,14 +21,14 @@ public class TrackCommand implements BotCommand {
             chatData = scrapperClient.getChatData(chatId);
         } catch (ResponseStatusException e) {
             if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
-                return BotCommand.NOT_STARTED;
+                return NOT_STARTED;
             } else {
-                return BotCommand.NOT_AVAILABLE;
+                return NOT_AVAILABLE;
             }
         }
 
         if (chatData.state() != ChatState.DEFAULT) {
-            return BotCommand.NOT_APPLICABLE;
+            return NOT_APPLICABLE;
         }
 
         if (tokens.length != 2) {
@@ -41,9 +41,9 @@ public class TrackCommand implements BotCommand {
             scrapperClient.updateChat(chatData);
         } catch (ResponseStatusException e) {
             if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
-                return BotCommand.NOT_STARTED;
+                return NOT_STARTED;
             } else {
-                return BotCommand.NOT_AVAILABLE;
+                return NOT_AVAILABLE;
             }
         }
 

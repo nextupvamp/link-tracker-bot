@@ -21,14 +21,14 @@ public class UntrackCommand implements BotCommand {
             chatData = scrapperClient.getChatData(chatId);
         } catch (ResponseStatusException e) {
             if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
-                return BotCommand.NOT_STARTED;
+                return NOT_STARTED;
             } else {
-                return BotCommand.NOT_AVAILABLE;
+                return NOT_AVAILABLE;
             }
         }
 
         if (chatData.state() != ChatState.DEFAULT) {
-            return BotCommand.NOT_APPLICABLE;
+            return NOT_APPLICABLE;
         }
 
         if (tokens.length != 2) {
@@ -43,15 +43,15 @@ public class UntrackCommand implements BotCommand {
             var status = HttpStatus.resolve(httpStatusCode.value());
             // consider that if we can't get status then the service isn't available
             if (httpStatusCode.is5xxServerError() || status == null) {
-                return BotCommand.NOT_AVAILABLE;
+                return NOT_AVAILABLE;
             }
             return switch (status) {
-                case HttpStatus.BAD_REQUEST -> String.format(BotCommand.ERROR_RESPONSE_FORMAT, "untrack link");
+                case HttpStatus.BAD_REQUEST -> String.format(ERROR_RESPONSE_FORMAT, "untrack link");
                 case HttpStatus.NOT_FOUND -> "Link not found. Try /list to see your actual tracked links.";
                 default -> throw new IllegalStateException("Unexpected value: " + status);
             };
         } catch (Exception e) {
-            return BotCommand.NOT_AVAILABLE;
+            return NOT_AVAILABLE;
         }
     }
 

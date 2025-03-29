@@ -23,12 +23,12 @@ public class StartCommand implements BotCommand {
                 scrapperClient.addChat(chatId);
                 return "Hello! You can see the bot's commands by entering /help";
             } catch (Exception ex) {
-                return BotCommand.NOT_AVAILABLE;
+                return NOT_AVAILABLE;
             }
         }
 
         if (newChat.state() != ChatState.DEFAULT) {
-            return BotCommand.NOT_APPLICABLE;
+            return NOT_APPLICABLE;
         } else {
             return "You've already started! Enter /help to see bot's commands.";
         }

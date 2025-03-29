@@ -20,14 +20,14 @@ public class HelpCommand implements BotCommand {
             chatData = scrapperClient.getChatData(chatId);
         } catch (ResponseStatusException e) {
             if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
-                return BotCommand.NOT_STARTED;
+                return NOT_STARTED;
             } else {
-                return BotCommand.NOT_AVAILABLE;
+                return NOT_AVAILABLE;
             }
         }
 
         if (chatData.state() != ChatState.DEFAULT) {
-            return BotCommand.NOT_APPLICABLE;
+            return NOT_APPLICABLE;
         }
 
         return "There's some help for you.";

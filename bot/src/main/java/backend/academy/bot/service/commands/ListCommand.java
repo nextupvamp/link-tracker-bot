@@ -20,14 +20,14 @@ public class ListCommand implements BotCommand {
             chatData = scrapperClient.getChatData(chatId);
         } catch (ResponseStatusException e) {
             if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
-                return BotCommand.NOT_STARTED;
+                return NOT_STARTED;
             } else {
-                return BotCommand.NOT_AVAILABLE;
+                return NOT_AVAILABLE;
             }
         }
 
         if (chatData.state() != ChatState.DEFAULT) {
-            return BotCommand.NOT_APPLICABLE;
+            return NOT_APPLICABLE;
         }
 
         try {
@@ -43,9 +43,9 @@ public class ListCommand implements BotCommand {
             return reply.toString();
         } catch (ResponseStatusException e) {
             if (e.getStatusCode().is5xxServerError()) {
-                return BotCommand.NOT_AVAILABLE;
+                return NOT_AVAILABLE;
             }
-            return String.format(BotCommand.ERROR_RESPONSE_FORMAT, "get list of links");
+            return String.format(ERROR_RESPONSE_FORMAT, "get list of links");
         }
     }
 
