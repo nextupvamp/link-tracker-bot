@@ -3,6 +3,9 @@ app:
   stackoverflow:
     key: ${SO_TOKEN_KEY}
     access-token: ${SO_ACCESS_TOKEN}
+  bot-url: "http://localhost:8080"
+  github-api-url: "https://api.github.com"
+  stack-exchange-api-url: "https://api.stackexchange.com/2.2"
 
 spring:
   application:
@@ -13,6 +16,11 @@ spring:
     hibernate:
       ddl-auto: validate
     open-in-view: false
+
+logging:
+  structured:
+    format:
+      console: ecs
 
 server:
   port: 8081

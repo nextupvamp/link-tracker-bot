@@ -1,5 +1,6 @@
 app:
   telegram-token: ${TELEGRAM_TOKEN} # env variable
+  scrapper-url: "http://localhost:8081"
 
 spring:
   application:
@@ -10,6 +11,11 @@ spring:
     hibernate:
       ddl-auto: validate
     open-in-view: false
+
+logging:
+  structured:
+    format:
+      console: ecs
 
 server:
   port: 8080
