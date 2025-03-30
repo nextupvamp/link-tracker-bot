@@ -22,6 +22,7 @@ import backend.academy.scrapper.service.scrapper.UpdateScrapperServiceImpl;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -83,11 +84,11 @@ public class ScheduledUpdateNotifierTest {
 
         var updates = scrapper.getUpdates();
 
-        updates.sort(Comparator.comparingInt(it -> it.tgChatsId().size()));
+        updates.sort(Comparator.comparingInt(it -> it.chats().size()));
 
         assertAll(
-                () -> assertEquals(List.of(1L, 2L), updates.getLast().tgChatsId()),
-                () -> assertEquals(List.of(3L), updates.getFirst().tgChatsId()));
+                () -> assertEquals(Set.of(1L, 2L), updates.getLast().chats().keySet()),
+                () -> assertEquals(Set.of(3L), updates.getFirst().chats().keySet()));
     }
 
     @ParameterizedTest
@@ -104,8 +105,8 @@ public class ScheduledUpdateNotifierTest {
         doReturn(new PageImpl(List.of())).when(subscriptionRepository).findAll(PageRequest.of(1, 10));
 
         doReturn(Optional.of(new Update(subscriptions.getFirst(), "", "", 0L, preview)))
-            .when(gitHubClient)
-            .checkUpdates(eq(subscription));
+                .when(gitHubClient)
+                .checkUpdates(eq(subscription));
 
         doReturn(5).when(config).previewSize();
 

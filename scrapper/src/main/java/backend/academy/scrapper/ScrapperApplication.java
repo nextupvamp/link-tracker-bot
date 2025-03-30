@@ -1,5 +1,6 @@
 package backend.academy.scrapper;
 
+import java.sql.SQLException;
 import javax.sql.DataSource;
 import liquibase.Contexts;
 import liquibase.LabelExpression;
@@ -8,6 +9,7 @@ import liquibase.changelog.DatabaseChangeLog;
 import liquibase.database.Database;
 import liquibase.database.DatabaseFactory;
 import liquibase.database.jvm.JdbcConnection;
+import liquibase.exception.LiquibaseException;
 import liquibase.resource.ClassLoaderResourceAccessor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
@@ -32,7 +34,7 @@ public class ScrapperApplication {
             Liquibase liquibase = new Liquibase(changelog, new ClassLoaderResourceAccessor(), database);
 
             liquibase.update(new Contexts(), new LabelExpression());
-        } catch (Exception e) {
+        } catch (LiquibaseException | SQLException e) {
             log.info("Liquibase migration has been failed");
         }
         log.info("Liquibase migration has been executed successfully");

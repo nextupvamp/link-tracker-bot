@@ -40,7 +40,7 @@ public class Chat {
     @JoinColumn(name = "curr_edited_link")
     private Link currentEditedLink;
 
-    @OneToMany(orphanRemoval = true, fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(
             joinColumns = @JoinColumn(name = "chat_id"),
             inverseJoinColumns = @JoinColumn(name = "link_id"),
@@ -50,7 +50,6 @@ public class Chat {
     public Chat(Long id, ChatState state) {
         this.id = id;
         this.state = state;
-        ;
     }
 
     public Optional<Link> findLink(String url) {

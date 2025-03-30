@@ -42,6 +42,8 @@ public class TrackCommand implements BotCommand {
         } catch (ResponseStatusException e) {
             if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
                 return NOT_STARTED;
+            } else if (e.getStatusCode() == HttpStatus.BAD_REQUEST) {
+                return "You cannot add that link: Unsupported website.";
             } else {
                 return NOT_AVAILABLE;
             }
@@ -57,6 +59,6 @@ public class TrackCommand implements BotCommand {
 
     @Override
     public String description() {
-        return "Starts tracking updates on the link";
+        return "Starts tracking updates on the link. Format: /track <url>";
     }
 }

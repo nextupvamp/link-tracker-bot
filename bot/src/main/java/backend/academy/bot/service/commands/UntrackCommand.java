@@ -62,6 +62,6 @@ public class UntrackCommand implements BotCommand {
 
     @Override
     public String description() {
-        return "Stops tracking updates on the link";
+        return "Stops tracking updates on the link. Format: /untrack <url>";
     }
 }

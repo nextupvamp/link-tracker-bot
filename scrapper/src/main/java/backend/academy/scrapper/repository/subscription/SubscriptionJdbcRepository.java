@@ -101,7 +101,7 @@ public class SubscriptionJdbcRepository implements SubscriptionRepository {
                         .query()
                         .singleColumn()
                         .stream()
-                        .map(elem -> (long) elem)
+                        .map(elem -> (Long) elem)
                         .toList();
 
         subscribers.forEach(elem -> {

@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import backend.academy.scrapper.ScrapperConfigProperties;
 import backend.academy.scrapper.dto.LinkUpdate;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import java.util.ArrayList;
+import java.util.HashMap;
 import org.junit.Rule;
 import org.junit.Test;
 import org.springframework.http.HttpStatus;
@@ -38,7 +38,7 @@ public class BotHttpClientTest {
 
         ResponseStatusException exception = assertThrows(
                 ResponseStatusException.class,
-                () -> botHttpClient.sendUpdate(new LinkUpdate("", "", "", 0, "", new ArrayList<>())));
+                () -> botHttpClient.sendUpdate(new LinkUpdate("", "", "", 0, "", new HashMap<>())));
 
         assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
     }

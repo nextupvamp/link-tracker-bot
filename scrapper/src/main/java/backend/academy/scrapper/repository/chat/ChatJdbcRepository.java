@@ -122,8 +122,8 @@ public class ChatJdbcRepository implements ChatRepository {
                 .query()
                 .optionalValue();
 
-        long linkId = result.map(it -> (long) it).orElseGet(() ->
-                (long) jdbcClient.sql("select nextval ('link_seq')").query().singleValue());
+        Long linkId = result.map(it -> (Long) it).orElseGet(() ->
+                (Long) jdbcClient.sql("select nextval ('link_seq')").query().singleValue());
 
         jdbcClient
                 .sql("insert into link (id, url) values (?, ?) on conflict (id) do update set url = ?")

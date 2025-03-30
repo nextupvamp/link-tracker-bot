@@ -10,8 +10,8 @@ import backend.academy.scrapper.model.Link;
 import backend.academy.scrapper.model.Subscription;
 import backend.academy.scrapper.repository.chat.ChatRepository;
 import backend.academy.scrapper.repository.subscription.SubscriptionRepository;
+import java.util.HashSet;
 import java.util.NoSuchElementException;
-import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -45,6 +45,11 @@ public class ChatServiceImpl implements ChatService {
         chat.state(chatData.state());
         chat.currentEditedLink(mapLinkDataToLink(chatData.currentEditedLink()));
 
+        if (!ChatService.isUrlValid(chat.currentEditedLink().url())) {
+            throw new IllegalArgumentException(
+                    "Unsupported or invalid URL: " + chat.currentEditedLink().url());
+        }
+
         if (chatData.links() != null) {
             chat.links(chatData.links().stream().map(this::mapLinkDataToLink).collect(Collectors.toSet()));
 
@@ -54,7 +59,10 @@ public class ChatServiceImpl implements ChatService {
             }
 
         } else if (chatData.currentEditedLink() != null) {
-            chat.links(Set.of(chat.currentEditedLink()));
+            // Set.of() causes UOE
+            var links = new HashSet<Link>();
+            links.add(chat.currentEditedLink());
+            chat.links(links);
         }
 
         chatRepository.save(chat);
