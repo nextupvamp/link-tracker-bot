@@ -1,5 +1,6 @@
 package backend.academy.scrapper.service.chat;
 
+import backend.academy.scrapper.client.PingClient;
 import backend.academy.scrapper.dto.AddLinkRequest;
 import backend.academy.scrapper.dto.ChatData;
 import backend.academy.scrapper.dto.LinkData;
@@ -7,19 +8,29 @@ import backend.academy.scrapper.dto.LinkSet;
 import backend.academy.scrapper.model.Chat;
 import backend.academy.scrapper.model.ChatState;
 import backend.academy.scrapper.model.Link;
+import backend.academy.scrapper.model.Site;
 import backend.academy.scrapper.model.Subscription;
 import backend.academy.scrapper.repository.chat.ChatRepository;
 import backend.academy.scrapper.repository.subscription.SubscriptionRepository;
 import java.util.HashSet;
 import java.util.NoSuchElementException;
+import java.util.function.Supplier;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-@AllArgsConstructor
 @Service
+@AllArgsConstructor
 public class ChatServiceImpl implements ChatService {
+    private static final Supplier<NoSuchElementException> CHAT_NOT_FOUND =
+            () -> new NoSuchElementException("Chat not found");
+    private static final Pattern STACKOVERFLOW_URL_PATTERN =
+            Pattern.compile("https://stackoverflow.com/questions/[0-9]+/?.[^/]+?");
+    private static final Pattern GITHUB_URL_PATTERN = Pattern.compile("https://github.com/.[^/]+/.[^/]+");
+
+    private final PingClient pingClient;
     private final ChatRepository chatRepository;
     private final SubscriptionRepository subscriptionRepository;
 
@@ -45,7 +56,7 @@ public class ChatServiceImpl implements ChatService {
         chat.state(chatData.state());
         chat.currentEditedLink(mapLinkDataToLink(chatData.currentEditedLink()));
 
-        if (!ChatService.isUrlValid(chat.currentEditedLink().url())) {
+        if (!isUrlValid(chat.currentEditedLink().url())) {
             throw new IllegalArgumentException(
                     "Unsupported or invalid URL: " + chat.currentEditedLink().url());
         }
@@ -78,7 +89,7 @@ public class ChatServiceImpl implements ChatService {
     public void addLink(long id, AddLinkRequest link) {
         Chat chat = chatRepository.findById(id).orElseThrow(CHAT_NOT_FOUND);
 
-        if (!ChatService.isUrlValid(link.url())) {
+        if (!isUrlValid(link.url())) {
             throw new IllegalArgumentException("Unsupported or invalid URL: " + link.url());
         }
 
@@ -88,7 +99,7 @@ public class ChatServiceImpl implements ChatService {
 
         var subscription = subscriptionRepository
                 .findById(link.url())
-                .orElse(new Subscription(link.url(), ChatService.getSiteType(link.url())));
+                .orElse(new Subscription(link.url(), getSiteType(link.url())));
 
         subscription.subscribers().add(chat);
 
@@ -102,7 +113,6 @@ public class ChatServiceImpl implements ChatService {
         var link = chat.findLink(url).orElseThrow(() -> new NoSuchElementException("Link not found"));
         chat.links().remove(link);
         chatRepository.save(chat);
-        // to avoid modernizer warning about isPresent use
         var subscription = subscriptionRepository.findById(link.url()).orElse(null);
 
         if (subscription != null) {
@@ -127,5 +137,24 @@ public class ChatServiceImpl implements ChatService {
     private Link mapLinkDataToLink(LinkData linkData) {
         if (linkData == null) return null;
         return new Link(linkData.id(), linkData.url(), linkData.tags(), linkData.filters());
+    }
+
+    private boolean isUrlValid(String url) {
+        if (STACKOVERFLOW_URL_PATTERN.matcher(url).matches()
+                || GITHUB_URL_PATTERN.matcher(url).matches()) {
+            return pingClient.ping(url);
+        }
+        return false;
+    }
+
+    private Site getSiteType(String url) {
+        if (url.startsWith("https://stackoverflow.com")) {
+            return Site.STACKOVERFLOW;
+        }
+        if (url.startsWith("https://github.com")) {
+            return Site.GITHUB;
+        }
+
+        throw new IllegalArgumentException("Unknown site type: " + url);
     }
 }

@@ -6,10 +6,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import backend.academy.scrapper.client.PingClient;
 import backend.academy.scrapper.dto.AddLinkRequest;
 import backend.academy.scrapper.model.Chat;
 import backend.academy.scrapper.model.ChatState;
@@ -37,6 +39,9 @@ public class ChatServiceTest {
     @Mock
     private SubscriptionRepository subRepo;
 
+    @Mock
+    private PingClient pingClient;
+
     @InjectMocks
     private ChatServiceImpl chatService;
 
@@ -45,8 +50,9 @@ public class ChatServiceTest {
         var link = new AddLinkRequest("https://github.com/oleg/tee", Set.of("tag"), Set.of("fil:ter"));
         var chat = new Chat(0L, ChatState.DEFAULT);
         doReturn(Optional.of(chat)).when(chatRepo).findById(anyLong());
+        doReturn(true).when(pingClient).ping(anyString());
         chatService.addLink(0L, link);
-        verify(chatRepo, times(1)).save(chat);
+        verify(chatRepo, times(1)).save(eq(chat));
         verify(subRepo, times(1)).save(any(Subscription.class));
     }
 
@@ -67,7 +73,7 @@ public class ChatServiceTest {
                 () -> assertTrue(subscription.subscribers().isEmpty()),
                 () -> assertTrue(chat.links().isEmpty()));
 
-        verify(chatRepo, times(1)).save(chat);
+        verify(chatRepo, times(1)).save(eq(chat));
         verify(subRepo, times(1)).delete(any(Subscription.class));
     }
 
@@ -90,8 +96,9 @@ public class ChatServiceTest {
         var link = new AddLinkRequest(url, Set.of("tag"), Set.of("fil:ter"));
         var chat = new Chat(0L, ChatState.DEFAULT);
         doReturn(Optional.of(chat)).when(chatRepo).findById(anyLong());
+        doReturn(true).when(pingClient).ping(anyString());
         chatService.addLink(0L, link);
-        verify(chatRepo, times(1)).save(chat);
+        verify(chatRepo, times(1)).save(eq(chat));
         verify(subRepo, times(1)).save(any(Subscription.class));
     }
 }
