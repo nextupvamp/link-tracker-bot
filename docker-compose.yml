@@ -3,7 +3,10 @@ services:
     build: /postgres
     image: "postgres:17-alpine"
     ports:
-      - 5432:5432
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
     network_mode: host
 
   bot:
@@ -15,9 +18,12 @@ services:
     env_file:
       - bot/bot.env
     network_mode: host
+    restart: on-failure
 
   scrapper:
     build: /scrapper
+    depends_on:
+      - liquibase-migrations
     ports:
       - "8081:8081"
     network_mode: host
@@ -31,7 +37,7 @@ services:
       - --searchPath=/changesets
       - --changelog-file=master.xml
       - --driver=org.postgresql.Driver
-      - --url=jdbc:postgresql://postgresql:5432/scrapper
+      - --url=jdbc:postgresql://localhost:5432/postgres
       - --username=postgres
       - --password=postgres
       - update

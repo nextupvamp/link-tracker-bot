@@ -56,7 +56,7 @@ public class ChatServiceImpl implements ChatService {
         chat.state(chatData.state());
         chat.currentEditedLink(mapLinkDataToLink(chatData.currentEditedLink()));
 
-        if (!isUrlValid(chat.currentEditedLink().url())) {
+        if (chat.currentEditedLink() != null && !isUrlValid(chat.currentEditedLink().url())) {
             throw new IllegalArgumentException(
                     "Unsupported or invalid URL: " + chat.currentEditedLink().url());
         }

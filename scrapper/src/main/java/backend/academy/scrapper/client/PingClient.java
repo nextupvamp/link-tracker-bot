@@ -13,7 +13,7 @@ public class PingClient {
 
     public boolean ping(String url) {
         try {
-            webClient.get().uri(url).retrieve().bodyToMono(Object.class).block();
+            webClient.get().uri(url).retrieve().bodyToMono(String.class).block();
         } catch (Exception e) {
             return false;
         }

@@ -43,7 +43,7 @@ public class TrackCommand implements BotCommand {
             if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
                 return NOT_STARTED;
             } else if (e.getStatusCode() == HttpStatus.BAD_REQUEST) {
-                return "You cannot add that link: Unsupported website.";
+                return "You cannot add that link: Unsupported or unavailable website.";
             } else {
                 return NOT_AVAILABLE;
             }
