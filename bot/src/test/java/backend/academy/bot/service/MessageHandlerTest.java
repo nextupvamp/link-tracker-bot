@@ -11,15 +11,18 @@ import backend.academy.bot.dto.LinkSet;
 import backend.academy.bot.model.ChatData;
 import backend.academy.bot.model.ChatState;
 import backend.academy.bot.model.Link;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.cache.CacheManager;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @SpringBootTest
@@ -32,12 +35,23 @@ public class MessageHandlerTest {
     @Autowired
     private MessageHandler messageHandler;
 
+    @Autowired
+    private CacheManager cacheManager;
+
+    @BeforeEach
+    public void setUp() {
+        var caches = cacheManager.getCacheNames();
+        for (var cacheName : caches) {
+            cacheManager.getCache(cacheName).clear();
+        }
+    }
+
     @ParameterizedTest
     @ValueSource(strings = {"command", "", "/starts", "/", "/startt"})
     public void testWrongCommands(String command) {
         doReturn(new ChatData(0L, ChatState.DEFAULT, null, null)).when(scrapper).getChatData(anyLong());
         String reply = messageHandler.handle(0L, command);
-        Assertions.assertTrue(reply.startsWith("Unknown command"));
+        Assertions.assertTrue(reply.startsWith("Command not found"));
     }
 
     @ParameterizedTest
@@ -104,9 +118,9 @@ public class MessageHandlerTest {
         var tags = new LinkedHashSet<String>();
         tags.add("oleg");
         tags.add("t");
-        var filters = new LinkedHashSet<String>();
-        filters.add("oleg:t");
-        filters.add("tea:pot");
+        var filters = new HashMap<String, String>();
+        filters.put("oleg", "t");
+        filters.put("tea", "pot");
         var link2 = new Link(null, "belt", tags, filters);
 
         var links = new LinkedHashSet<Link>();
@@ -129,8 +143,8 @@ public class MessageHandlerTest {
                         + "    oleg" + LF
                         + "    t" + LF
                         + "Filters:" + LF
-                        + "    oleg:t" + LF
-                        + "    tea:pot" + LF
+                        + "    tea = pot" + LF
+                        + "    oleg = t" + LF
                         + LF,
                 reply);
     }

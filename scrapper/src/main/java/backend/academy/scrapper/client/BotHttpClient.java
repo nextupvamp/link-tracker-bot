@@ -11,7 +11,7 @@ import reactor.core.publisher.Mono;
 
 @Slf4j
 @Component
-public class BotHttpClient {
+public class BotHttpClient implements BotClient {
     private final WebClient webClient;
     private final ScrapperConfigProperties config;
 
@@ -25,6 +25,7 @@ public class BotHttpClient {
                 .build();
     }
 
+    @Override
     public void sendUpdate(LinkUpdate update) {
         webClient
                 .post()

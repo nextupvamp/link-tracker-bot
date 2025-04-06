@@ -4,6 +4,7 @@ app:
   set-commands-url-format: "https://api.telegram.org/bot%s/setMyCommands"
   tg-chat-path: "/tg-chat"
   link-path: "/links?Tg-Chat-Id="
+  cache-ttl: 5
 
 spring:
   application:

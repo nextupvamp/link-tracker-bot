@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import backend.academy.scrapper.model.Chat;
 import backend.academy.scrapper.model.ChatState;
 import backend.academy.scrapper.model.Link;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
@@ -41,7 +42,7 @@ public class ChatJdbcRepositoryTest {
     @DirtiesContext
     public void testSaveAndFindById() {
         Chat chat = new Chat(123L, ChatState.DEFAULT);
-        Link currentEditedLink = new Link("url", Set.of("tag1", "tag2"), Set.of("filter1", "filter2"));
+        Link currentEditedLink = new Link("url", Set.of("tag1", "tag2"), Map.of("filter1", "filter2"));
         chat.currentEditedLink(currentEditedLink);
         chat.links().add(currentEditedLink);
         chat.links().add(new Link("link"));
@@ -54,7 +55,7 @@ public class ChatJdbcRepositoryTest {
     @Test
     public void testDelete() {
         Chat chat = new Chat(123L, ChatState.DEFAULT);
-        Link currentEditedLink = new Link("url", Set.of("tag1", "tag2"), Set.of("filter1", "filter2"));
+        Link currentEditedLink = new Link("url", Set.of("tag1", "tag2"), Map.of("filter1", "filter2"));
         chat.currentEditedLink(currentEditedLink);
         chat.links().add(currentEditedLink);
         chat.links().add(new Link("link"));

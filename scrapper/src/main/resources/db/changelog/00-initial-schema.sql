@@ -1,5 +1,5 @@
 --liquibase formatted sql
---changeset nextupvamp:1
+--changeset nextupvamp:2
 
 create table if not exists link (
                                     id bigint not null primary key,
@@ -19,7 +19,8 @@ create table if not exists chat_links (
 
 create table if not exists link_filters (
                                             link bigint not null references link (id) on delete cascade,
-                                            filter varchar not null
+                                            key varchar not null,
+                                            value varchar not null
 );
 
 create table if not exists link_tags (
@@ -39,7 +40,7 @@ create table if not exists subscriber(
                                          subscription varchar not null references subscription (url) on delete cascade
 );
 
-create sequence if not exists link_seq increment by 50;
+create sequence if not exists link_seq increment by 1;
 
 create index if not exists chat_links_idx on chat_links using btree (chat_id);
 

@@ -1,10 +1,9 @@
 package backend.academy.bot.service.commands;
 
 import backend.academy.bot.client.ScrapperClient;
-import backend.academy.bot.model.ChatData;
 import backend.academy.bot.model.ChatState;
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpStatus;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -12,22 +11,15 @@ import org.springframework.web.server.ResponseStatusException;
 @Component
 public class ListCommand implements BotCommand {
     private final ScrapperClient scrapperClient;
+    private final CommandCommons commons;
 
     @Override
+    @Cacheable(key = "#chatId", value = CommandCachingManager.CACHE_NAME)
     public String execute(long chatId, String[] tokens) {
-        ChatData chatData;
         try {
-            chatData = scrapperClient.getChatData(chatId);
-        } catch (ResponseStatusException e) {
-            if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
-                return NOT_STARTED;
-            } else {
-                return NOT_AVAILABLE;
-            }
-        }
-
-        if (chatData.state() != ChatState.DEFAULT) {
-            return NOT_APPLICABLE;
+            commons.getChatDataWithState(chatId, scrapperClient, ChatState.DEFAULT);
+        } catch (Exception e) {
+            return e.getMessage();
         }
 
         try {

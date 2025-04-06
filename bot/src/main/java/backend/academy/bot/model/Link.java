@@ -1,11 +1,13 @@
 package backend.academy.bot.model;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
-public record Link(Long id, String url, Set<String> tags, Set<String> filters) {
+public record Link(Long id, String url, Set<String> tags, Map<String, String> filters) {
     public Link(String url) {
-        this(null, url, new HashSet<>(), new HashSet<>());
+        this(null, url, new HashSet<>(), new HashMap<>());
     }
 
     @Override
@@ -39,7 +41,8 @@ public record Link(Long id, String url, Set<String> tags, Set<String> filters) {
 
         sb.append("Filters:\n");
         if (filters != null && !filters.isEmpty()) {
-            filters.forEach(filter -> sb.append("    ").append(filter).append('\n'));
+            filters.forEach((k, v) ->
+                    sb.append("    ").append(k).append(" = ").append(v).append('\n'));
         } else {
             sb.append("    no filters\n");
         }

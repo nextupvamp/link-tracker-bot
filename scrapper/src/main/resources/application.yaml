@@ -7,7 +7,7 @@ app:
   github-api-url: "https://api.github.com"
   github-repo-issue-format: "repos/%s/issues?per_page=1"
   stack-exchange-api-url: "https://api.stackexchange.com/2.2"
-  updates-path:  "/updates"
+  updates-path: "/updates"
   page-size: 50
   preview-size: 200
   access-type: jpa

@@ -8,6 +8,7 @@ import backend.academy.scrapper.model.Link;
 import backend.academy.scrapper.model.Site;
 import backend.academy.scrapper.model.Subscription;
 import backend.academy.scrapper.repository.chat.ChatJdbcRepository;
+import java.util.Map;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,13 +52,13 @@ public class SubscriptionJdbcRepositoryTest {
         Subscription expected = new Subscription(URL, SITE);
 
         Chat subscriber1 = new Chat(123L, ChatState.DEFAULT);
-        Link currentEditedLink1 = new Link(URL, Set.of("tag1", "tag2"), Set.of("filter1", "filter2"));
+        Link currentEditedLink1 = new Link(URL, Set.of("tag1", "tag2"), Map.of("filter1", "filter2"));
         subscriber1.currentEditedLink(currentEditedLink1);
         subscriber1.links().add(currentEditedLink1);
         subscriber1.links().add(new Link("link"));
 
         Chat subscriber2 = new Chat(124L, ChatState.DEFAULT);
-        Link currentEditedLink2 = new Link(URL + 1, Set.of("tagg1", "tagg2"), Set.of("filterr1", "filterr2"));
+        Link currentEditedLink2 = new Link(URL + 1, Set.of("tagg1", "tagg2"), Map.of("filterr1", "filterr2"));
         subscriber2.currentEditedLink(currentEditedLink2);
         subscriber2.links().add(currentEditedLink2);
         subscriber2.links().add(new Link("linkk"));
@@ -76,13 +77,13 @@ public class SubscriptionJdbcRepositoryTest {
         Subscription expected1 = new Subscription(URL, SITE);
 
         Chat subscriber1 = new Chat(123L, ChatState.DEFAULT);
-        Link currentEditedLink1 = new Link(URL, Set.of("tag1", "tag2"), Set.of("filter1", "filter2"));
+        Link currentEditedLink1 = new Link(URL, Set.of("tag1", "tag2"), Map.of("filter1", "filter2"));
         subscriber1.currentEditedLink(currentEditedLink1);
         subscriber1.links().add(currentEditedLink1);
         subscriber1.links().add(new Link("link"));
 
         Chat subscriber2 = new Chat(124L, ChatState.DEFAULT);
-        Link currentEditedLink2 = new Link(URL + 1, Set.of("tagg1", "tagg2"), Set.of("filterr1", "filterr2"));
+        Link currentEditedLink2 = new Link(URL + 1, Set.of("tagg1", "tagg2"), Map.of("filterr1", "filterr2"));
         subscriber2.currentEditedLink(currentEditedLink2);
         subscriber2.links().add(currentEditedLink2);
         subscriber2.links().add(new Link("linkk"));
@@ -110,13 +111,13 @@ public class SubscriptionJdbcRepositoryTest {
         Subscription expected = new Subscription(URL, SITE);
 
         Chat subscriber1 = new Chat(123L, ChatState.DEFAULT);
-        Link currentEditedLink1 = new Link(URL, Set.of("tag1", "tag2"), Set.of("filter1", "filter2"));
+        Link currentEditedLink1 = new Link(URL, Set.of("tag1", "tag2"), Map.of("filter1", "filter2"));
         subscriber1.currentEditedLink(currentEditedLink1);
         subscriber1.links().add(currentEditedLink1);
         subscriber1.links().add(new Link("link"));
 
         Chat subscriber2 = new Chat(124L, ChatState.DEFAULT);
-        Link currentEditedLink2 = new Link(URL + 1, Set.of("tagg1", "tagg2"), Set.of("filterr1", "filterr2"));
+        Link currentEditedLink2 = new Link(URL + 1, Set.of("tagg1", "tagg2"), Map.of("filterr1", "filterr2"));
         subscriber2.currentEditedLink(currentEditedLink2);
         subscriber2.links().add(currentEditedLink2);
         subscriber2.links().add(new Link("linkk"));

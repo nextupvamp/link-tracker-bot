@@ -13,29 +13,21 @@ import org.springframework.web.server.ResponseStatusException;
 @Component
 public class TrackCommand implements BotCommand {
     private final ScrapperClient scrapperClient;
+    private final CommandCommons commons;
 
     @Override
     public String execute(long chatId, String[] tokens) {
-        ChatData chatData;
         try {
-            chatData = scrapperClient.getChatData(chatId);
-        } catch (ResponseStatusException e) {
-            if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
-                return NOT_STARTED;
-            } else {
-                return NOT_AVAILABLE;
-            }
-        }
-
-        if (chatData.state() != ChatState.DEFAULT) {
-            return NOT_APPLICABLE;
+            commons.getChatDataWithState(chatId, scrapperClient, ChatState.DEFAULT);
+        } catch (Exception e) {
+            return e.getMessage();
         }
 
         if (tokens.length != 2) {
             return "Wrong format. Try \"" + command() + " <url>\"";
         }
 
-        chatData = new ChatData(chatId, ChatState.ENTERING_TAGS, new Link(tokens[1]), null);
+        ChatData chatData = new ChatData(chatId, ChatState.ENTERING_TAGS, new Link(tokens[1]), null);
 
         try {
             scrapperClient.updateChat(chatData);

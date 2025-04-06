@@ -1,5 +1,6 @@
 package backend.academy.scrapper.dto;
 
+import java.util.Map;
 import java.util.Set;
 
-public record AddLinkRequest(String url, Set<String> tags, Set<String> filters) {}
+public record AddLinkRequest(String url, Set<String> tags, Map<String, String> filters) {}

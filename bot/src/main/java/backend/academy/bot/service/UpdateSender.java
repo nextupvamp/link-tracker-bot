@@ -18,8 +18,10 @@ public class UpdateSender {
 
     public void sendUpdates(LinkUpdate linkUpdate) {
         var chats = linkUpdate.chats();
-        for (var chat : chats.entrySet()) {
-            bot.execute(new SendMessage(chat.getKey(), getMessage(linkUpdate, chat.getValue())));
+        for (var chat : chats) {
+            if (!chat.filters().get("user").equals(linkUpdate.username())) {
+                bot.execute(new SendMessage(chat.id(), getMessage(linkUpdate, chat.tags())));
+            }
         }
     }
 

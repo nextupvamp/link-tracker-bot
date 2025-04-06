@@ -1,4 +1,4 @@
-package backend.academy.bot;
+package backend.academy.bot.config;
 
 import jakarta.validation.constraints.NotEmpty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -11,4 +11,5 @@ public record BotConfigProperties(
         @NotEmpty String scrapperUrl,
         @NotEmpty String setCommandsUrlFormat,
         @NotEmpty String tgChatPath,
-        @NotEmpty String linkPath) {}
+        @NotEmpty String linkPath,
+        @NotEmpty int cacheTtl) {}

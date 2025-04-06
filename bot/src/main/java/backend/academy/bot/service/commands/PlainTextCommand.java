@@ -4,9 +4,9 @@ import backend.academy.bot.client.ScrapperClient;
 import backend.academy.bot.model.ChatData;
 import backend.academy.bot.model.ChatState;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -14,22 +14,20 @@ import org.springframework.web.server.ResponseStatusException;
 @Component
 public class PlainTextCommand implements BotCommand {
     private final ScrapperClient scrapperClient;
+    private final CommandCachingManager cachingManager;
+    private final CommandCommons commons;
 
     @Override
     public String execute(long chatId, String[] tokens) {
         ChatData chatData;
         try {
-            chatData = scrapperClient.getChatData(chatId);
-        } catch (ResponseStatusException e) {
-            if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
-                return NOT_STARTED;
-            } else {
-                return NOT_AVAILABLE;
-            }
-        }
+            chatData = commons.getChatData(chatId, scrapperClient);
 
-        if (chatData.state() == ChatState.DEFAULT) {
-            return UNKNOWN_COMMAND;
+            if (chatData.state() == ChatState.DEFAULT) {
+                return "Command not found";
+            }
+        } catch (Exception e) {
+            return e.getMessage();
         }
 
         return switch (chatData.state()) {
@@ -51,28 +49,31 @@ public class PlainTextCommand implements BotCommand {
                     yield NOT_AVAILABLE;
                 }
 
-                reply.append("You can add filters or finish adding with /cancel");
+                cachingManager.evictCache(chatId);
+                reply.append(
+                        "You can add filters or finish adding with /cancel. In the current version only filtering by the user is available");
                 yield reply.toString();
             }
             case ENTERING_FILTERS -> {
                 var currentLink = chatData.currentEditedLink();
-                Set<String> filters = currentLink.filters();
+                Map<String, String> filters = currentLink.filters();
 
                 StringBuilder reply = new StringBuilder();
                 reply.append("Added filters:\n");
                 for (String token : tokens) {
-                    if (token.contains(":")) {
-                        filters.add(token);
+                    if (token.contains("=")) {
+                        String[] keyValue = token.split("=", 2);
+                        filters.put(keyValue[0], keyValue[1]);
                         reply.append(token).append("\n");
                     } else {
-                        yield "Wrong format \"" + token + "\". Try \"<key1>:<value1> <key2>:<value2>...\"";
+                        yield "Wrong format \"" + token + "\". Try \"<key1>=<value1> <key2>=<value2>...\"";
                     }
                 }
 
                 chatData.links().remove(currentLink);
                 chatData.links().add(currentLink);
 
-                reply.append(BotCommand.finishAdding(chatId, chatData, scrapperClient));
+                reply.append(commons.finishAdding(chatId, chatData, scrapperClient));
                 yield reply.toString();
             }
         };
