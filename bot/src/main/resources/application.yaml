@@ -22,12 +22,12 @@ spring:
       fetch.max.wait.ms: 10000
       max.poll.interval.ms: 10000
       max.poll.records: 10
-      bootstrap-servers: localhost:9092
+      bootstrap-servers: localhost:19092, localhost:29092
 
       producer.properties:
         spring:
             json.add.type.headers: false
-        bootstrap-servers: localhost:9092
+        bootstrap-servers: localhost:19092, localhost:29092
   application:
     name: Bot
   liquibase:

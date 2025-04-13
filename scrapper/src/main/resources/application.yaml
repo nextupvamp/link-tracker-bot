@@ -22,7 +22,7 @@ spring:
     producer:
       properties.spring:
           json.add.type.headers: false
-      bootstrap-servers: localhost:9092
+      bootstrap-servers: localhost:19092, localhost:29092
   datasource:
     url: jdbc:postgresql://localhost:5432/postgres
     username: postgres
