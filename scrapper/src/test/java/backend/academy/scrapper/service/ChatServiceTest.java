@@ -11,7 +11,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import backend.academy.scrapper.client.PingClient;
+import backend.academy.scrapper.client.util.PingClient;
 import backend.academy.scrapper.dto.AddLinkRequest;
 import backend.academy.scrapper.model.Chat;
 import backend.academy.scrapper.model.ChatState;

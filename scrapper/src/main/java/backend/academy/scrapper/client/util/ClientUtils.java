@@ -1,4 +1,4 @@
-package backend.academy.scrapper.client;
+package backend.academy.scrapper.client.util;
 
 import backend.academy.scrapper.dto.ApiErrorResponse;
 import lombok.experimental.UtilityClass;

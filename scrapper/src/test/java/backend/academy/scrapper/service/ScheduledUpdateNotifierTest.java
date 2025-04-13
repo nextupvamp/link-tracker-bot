@@ -6,9 +6,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 
-import backend.academy.scrapper.ScrapperConfigProperties;
-import backend.academy.scrapper.client.GitHubCheckUpdateClient;
-import backend.academy.scrapper.client.StackOverflowCheckUpdateClient;
+import backend.academy.scrapper.client.update.GitHubCheckUpdateClient;
+import backend.academy.scrapper.client.update.StackOverflowCheckUpdateClient;
+import backend.academy.scrapper.config.ScrapperConfigProperties;
 import backend.academy.scrapper.dto.LightChatData;
 import backend.academy.scrapper.dto.Update;
 import backend.academy.scrapper.model.Chat;

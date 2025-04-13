@@ -1,12 +1,33 @@
 app:
   telegram-token: ${TELEGRAM_TOKEN} # env variable
-  scrapper-url: "http://localhost:8081"
-  set-commands-url-format: "https://api.telegram.org/bot%s/setMyCommands"
-  tg-chat-path: "/tg-chat"
-  link-path: "/links?Tg-Chat-Id="
-  cache-ttl: 5
+  scrapper-url: http://localhost:8081
+  set-commands-url-format: https://api.telegram.org/bot%s/setMyCommands
+  tg-chat-path: /tg-chat
+  link-path: /links?Tg-Chat-Id=
+  message-transport: kafka
+  cache:
+    cache-ttl: 5
+  kafka:
+    concurrency: 3
+    group-id: group
+
 
 spring:
+  kafka:
+    consumer.properties:
+      enable.auto.commit: false
+      auto.offset.reset: earliest
+      fetch.min.bytes: 1024
+      fetch.max.bytes: 1048576
+      fetch.max.wait.ms: 10000
+      max.poll.interval.ms: 10000
+      max.poll.records: 10
+      bootstrap-servers: localhost:9092
+
+      producer.properties:
+        spring:
+            json.add.type.headers: false
+        bootstrap-servers: localhost:9092
   application:
     name: Bot
   liquibase:

@@ -40,6 +40,17 @@ public class CommandCommons {
         return chatData;
     }
 
+    public ChatData getChatDataWithoutState(long chatId, ScrapperClient scrapperClient, ChatState chatState)
+            throws Exception {
+        ChatData chatData = getChatData(chatId, scrapperClient);
+
+        if (chatData.state() == chatState) {
+            throw new Exception(BotCommand.NOT_APPLICABLE);
+        }
+
+        return chatData;
+    }
+
     public ChatData getChatData(long chatId, ScrapperClient scrapperClient) throws Exception {
         ChatData chatData;
 

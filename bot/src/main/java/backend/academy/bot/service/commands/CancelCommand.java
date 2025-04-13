@@ -16,7 +16,7 @@ public class CancelCommand implements BotCommand {
     public String execute(long chatId, String[] tokens) {
         ChatData chatData;
         try {
-            chatData = commons.getChatDataWithState(chatId, scrapperClient, ChatState.DEFAULT);
+            chatData = commons.getChatDataWithoutState(chatId, scrapperClient, ChatState.DEFAULT);
         } catch (Exception e) {
             return e.getMessage();
         }

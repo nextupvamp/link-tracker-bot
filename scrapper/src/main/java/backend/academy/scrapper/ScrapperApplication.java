@@ -1,5 +1,7 @@
 package backend.academy.scrapper;
 
+import backend.academy.scrapper.config.KafkaConfigProperties;
+import backend.academy.scrapper.config.ScrapperConfigProperties;
 import java.sql.SQLException;
 import javax.sql.DataSource;
 import liquibase.Contexts;
@@ -18,7 +20,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
-@EnableConfigurationProperties({ScrapperConfigProperties.class})
+@EnableConfigurationProperties({ScrapperConfigProperties.class, KafkaConfigProperties.class})
 @EnableScheduling
 @Slf4j
 public class ScrapperApplication {

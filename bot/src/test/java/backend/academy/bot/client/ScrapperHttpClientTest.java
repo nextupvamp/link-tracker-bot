@@ -8,7 +8,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import backend.academy.bot.config.BotConfigProperties;
+import backend.academy.bot.config.bot.BotConfigProperties;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -21,7 +21,7 @@ public class ScrapperHttpClientTest {
     public WireMockRule wireMockRule = new WireMockRule(1487);
 
     private final BotConfigProperties config =
-            new BotConfigProperties(null, "http://localhost:1487", null, "/tg-chat/", "/links?Tg-Chat-Id=", 0);
+            new BotConfigProperties(null, "http://localhost:1487", null, "/tg-chat/", "/links?Tg-Chat-Id=");
 
     private final ScrapperHttpClient scrapperClient = new ScrapperHttpClient(WebClient.builder(), config);
 

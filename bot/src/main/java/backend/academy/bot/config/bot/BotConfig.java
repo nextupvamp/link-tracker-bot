@@ -1,4 +1,4 @@
-package backend.academy.bot.config;
+package backend.academy.bot.config.bot;
 
 import backend.academy.bot.dto.BotCommandDto;
 import backend.academy.bot.dto.SetCommandsRequest;

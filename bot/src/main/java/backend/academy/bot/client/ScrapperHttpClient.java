@@ -1,6 +1,6 @@
 package backend.academy.bot.client;
 
-import backend.academy.bot.config.BotConfigProperties;
+import backend.academy.bot.config.bot.BotConfigProperties;
 import backend.academy.bot.dto.ApiErrorResponse;
 import backend.academy.bot.dto.LinkSet;
 import backend.academy.bot.model.ChatData;

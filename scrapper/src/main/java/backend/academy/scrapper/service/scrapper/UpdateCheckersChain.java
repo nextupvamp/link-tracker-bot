@@ -1,6 +1,6 @@
 package backend.academy.scrapper.service.scrapper;
 
-import backend.academy.scrapper.client.CheckUpdateClient;
+import backend.academy.scrapper.client.update.CheckUpdateClient;
 import backend.academy.scrapper.dto.Update;
 import backend.academy.scrapper.model.Subscription;
 import java.util.List;
