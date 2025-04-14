@@ -81,7 +81,7 @@ public class ScrapperClient {
 
     private Mono<ClientResponse> renderApiErrorResponse(ClientResponse clientResponse) {
         if (clientResponse.statusCode().isError()) {
-            log.atInfo()
+            log.atError()
                     .addKeyValue("api_error_response", clientResponse.statusCode())
                     .log();
             return clientResponse
@@ -94,7 +94,7 @@ public class ScrapperClient {
     private ExchangeFilterFunction logRequest() {
         return ExchangeFilterFunction.ofRequestProcessor(clientRequest -> {
             var log = ScrapperClient.log
-                    .atInfo()
+                    .atDebug()
                     .addKeyValue("request_method", clientRequest.method())
                     .addKeyValue("request_url", clientRequest.url());
             var headers = clientRequest.headers().asSingleValueMap();
@@ -108,7 +108,7 @@ public class ScrapperClient {
 
     private ExchangeFilterFunction logResponse() {
         return ExchangeFilterFunction.ofResponseProcessor(clientResponse -> {
-            var log = ScrapperClient.log.atInfo().addKeyValue("response_status", clientResponse.statusCode());
+            var log = ScrapperClient.log.atDebug().addKeyValue("response_status", clientResponse.statusCode());
             var headers = clientResponse.headers().asHttpHeaders().asSingleValueMap();
             for (var entry : headers.entrySet()) {
                 log = log.addKeyValue(entry.getKey(), entry.getValue());

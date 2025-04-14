@@ -1,0 +1,10 @@
+The bot is designed to track updates on Github and Stackoverflow.
+
+To start tracking, enter /track and the URL of the page to be tracked.
+The addition takes place in several stages: entering a URL, entering tags, and entering filters. At any stage, you can stop the input using /cancel, and then the link will be with the parameters that you have already entered.
+
+To view the list of tracked links, enter /list.
+
+You can add or remove tags for a link by entering the /add_tag or /remove_tag commands, respectively.
+
+To stop tracking a link, enter /untrack and the URL of the link you want to stop tracking.

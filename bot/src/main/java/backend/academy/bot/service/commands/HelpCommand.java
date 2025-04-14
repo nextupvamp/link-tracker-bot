@@ -3,6 +3,10 @@ package backend.academy.bot.service.commands;
 import backend.academy.bot.client.ScrapperClient;
 import backend.academy.bot.model.ChatData;
 import backend.academy.bot.model.ChatState;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.util.Objects;
+import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -30,7 +34,12 @@ public class HelpCommand implements BotCommand {
             return NOT_APPLICABLE;
         }
 
-        return "There's some help for you.";
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(
+                Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("manual.txt"))))) {
+            return br.lines().collect(Collectors.joining());
+        } catch (Exception e) {
+            return "Nobody will help you.";
+        }
     }
 
     @Override

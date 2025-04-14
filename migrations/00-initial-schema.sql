@@ -1,5 +1,5 @@
 create table if not exists link (
-                                    id bigint not null primary key,
+                                    id bigserial not null primary key,
                                     url varchar not null
 );
 
@@ -36,16 +36,10 @@ create table if not exists subscriber(
                                          subscription varchar not null references subscription (url) on delete cascade
 );
 
-create sequence if not exists link_seq increment by 50;
-
 create index if not exists chat_links_idx on chat_links using btree (chat_id);
-
-create index if not exists chat_idx on chat using btree (id);
 
 create index if not exists link_tags_idx on link_tags using btree (link);
 
 create index if not exists link_filters_idx on link_filters using btree (link);
-
-create index if not exists subscription_idx on subscription using btree (url);
 
 create index if not exists subscriber_idx on subscriber using btree (subscription);
