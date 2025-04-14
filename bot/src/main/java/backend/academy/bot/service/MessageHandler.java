@@ -9,13 +9,17 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class MessageHandler {
-    @Autowired(required = false)
     @Getter
-    private List<BotCommand> commands;
+    private final List<BotCommand> commands;
 
-    @Qualifier("plainTextCommand")
-    @Autowired(required = false)
-    private BotCommand plainTextCommand;
+    private final BotCommand plainTextCommand;
+
+    public MessageHandler(
+            @Autowired(required = false) List<BotCommand> commands,
+            @Autowired(required = false) @Qualifier("plainTextCommand") BotCommand plainTextCommand) {
+        this.commands = commands;
+        this.plainTextCommand = plainTextCommand;
+    }
 
     public String handle(long chatId, String text) {
         if (commands == null) {

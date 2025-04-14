@@ -29,6 +29,8 @@ public class ChatServiceImpl implements ChatService {
     private static final Pattern STACKOVERFLOW_URL_PATTERN =
             Pattern.compile("https://stackoverflow.com/questions/[0-9]+/?.[^/]+?");
     private static final Pattern GITHUB_URL_PATTERN = Pattern.compile("https://github.com/.[^/]+/.[^/]+");
+    private static final String STACKOVERFLOW_URL = "https://stackoverflow.com";
+    private static final String GITHUB_URL = "https://github.com";
 
     private final PingClient pingClient;
     private final ChatRepository chatRepository;
@@ -149,10 +151,10 @@ public class ChatServiceImpl implements ChatService {
     }
 
     private Site getSiteType(String url) {
-        if (url.startsWith("https://stackoverflow.com")) {
+        if (url.startsWith(STACKOVERFLOW_URL)) {
             return Site.STACKOVERFLOW;
         }
-        if (url.startsWith("https://github.com")) {
+        if (url.startsWith(GITHUB_URL)) {
             return Site.GITHUB;
         }
 

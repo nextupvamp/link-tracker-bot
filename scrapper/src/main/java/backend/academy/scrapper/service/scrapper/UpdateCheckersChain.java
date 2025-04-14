@@ -4,13 +4,14 @@ import backend.academy.scrapper.client.update.CheckUpdateClient;
 import backend.academy.scrapper.dto.Update;
 import backend.academy.scrapper.model.Subscription;
 import java.util.List;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
+@AllArgsConstructor(onConstructor_ = {@Autowired(required = false)})
 public class UpdateCheckersChain {
-    @Autowired(required = false)
-    private List<CheckUpdateClient> checkers;
+    private final List<CheckUpdateClient> checkers;
 
     public Update checkUpdates(Subscription subscription) {
         Update update = null;
