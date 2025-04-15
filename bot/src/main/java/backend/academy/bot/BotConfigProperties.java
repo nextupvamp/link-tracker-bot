@@ -1,0 +1,14 @@
+package backend.academy.bot;
+
+import jakarta.validation.constraints.NotEmpty;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.validation.annotation.Validated;
+
+@Validated
+@ConfigurationProperties(prefix = "app", ignoreUnknownFields = false)
+public record BotConfigProperties(
+        @NotEmpty String telegramToken,
+        @NotEmpty String scrapperUrl,
+        @NotEmpty String setCommandsUrlFormat,
+        @NotEmpty String tgChatPath,
+        @NotEmpty String linkPath) {}

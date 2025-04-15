@@ -1,9 +1,11 @@
 package backend.academy.bot.client;
 
-import backend.academy.bot.exception.ApiErrorResponse;
+import backend.academy.bot.BotConfigProperties;
+import backend.academy.bot.dto.ApiErrorResponse;
+import backend.academy.bot.dto.LinkSet;
+import backend.academy.bot.model.ChatData;
 import backend.academy.bot.model.Link;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -13,85 +15,73 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
 
+@Slf4j
 public class ScrapperClient {
-    private static final Logger LOG = LoggerFactory.getLogger(ScrapperClient.class);
-
-    private static final String TG_CHAT_PATH = "/tg-chat/";
-    private static final String LINKS_PATH = "/links?Tg-Chat-Id=";
-
     private final WebClient webClient;
+    private final String tgChatPath;
+    private final String linksPath;
 
-    public ScrapperClient(String scrapperUrl) {
-        webClient = WebClient.builder()
-                .baseUrl(scrapperUrl)
+    public ScrapperClient(WebClient.Builder webClientBuilder, BotConfigProperties properties) {
+        tgChatPath = properties.tgChatPath();
+        linksPath = properties.linkPath();
+        webClient = webClientBuilder
+                .baseUrl(properties.scrapperUrl())
                 .filter(logRequest())
                 .filter(ExchangeFilterFunction.ofResponseProcessor(this::renderApiErrorResponse))
                 .filter(logResponse())
                 .build();
     }
 
-    public void addChat(long chatId) {
-        webClient
-                .post()
-                .uri(TG_CHAT_PATH + chatId)
-                .retrieve()
-                .onStatus(HttpStatusCode::isError, response -> response.bodyToMono(ApiErrorResponse.class)
-                        .flatMap(error -> Mono.error(new ResponseStatusException(HttpStatus.valueOf(error.code())))))
-                .bodyToMono(Link.class)
-                .block();
+    public ChatData getChatData(long chatId) {
+        return execRequest(webClient.get(), tgChatPath + "/" + chatId, ChatData.class);
     }
 
-    // not required by the specification but required to say that this client
-    // can use all the functionality of the scrapper service
+    public void updateChat(ChatData chatData) {
+        execRequestWithBody(webClient.patch(), tgChatPath, Object.class, chatData);
+    }
+
+    public void addChat(long chatId) {
+        execRequest(webClient.post(), tgChatPath + "/" + chatId, Object.class);
+    }
+
     public void deleteChat(long chatId) {
-        webClient
-                .delete()
-                .uri(TG_CHAT_PATH + chatId)
-                .retrieve()
-                .onStatus(HttpStatusCode::isError, response -> response.bodyToMono(ApiErrorResponse.class)
-                        .flatMap(error -> Mono.error(new ResponseStatusException(HttpStatus.valueOf(error.code())))))
-                .bodyToMono(Link.class)
-                .block();
+        execRequest(webClient.delete(), tgChatPath + "/" + chatId, Object.class);
     }
 
     public LinkSet getAllLinks(long chatId) {
-        return webClient
-                .get()
-                .uri(LINKS_PATH + chatId)
-                .retrieve()
-                .onStatus(HttpStatusCode::isError, response -> response.bodyToMono(ApiErrorResponse.class)
-                        .flatMap(error -> Mono.error(new ResponseStatusException(HttpStatus.valueOf(error.code())))))
-                .bodyToMono(LinkSet.class)
-                .block();
+        return execRequest(webClient.get(), linksPath + chatId, LinkSet.class);
     }
 
     public void addLink(long chatId, Link link) {
-        webClient
-                .post()
-                .uri(LINKS_PATH + chatId)
-                .bodyValue(link)
+        execRequestWithBody(webClient.post(), linksPath + chatId, Object.class, link);
+    }
+
+    public void removeLink(long chatId, Link link) {
+        execRequestWithBody(webClient.method(HttpMethod.DELETE), linksPath + chatId, Object.class, link);
+    }
+
+    private <R> R execRequest(WebClient.RequestHeadersUriSpec<?> request, String uri, Class<R> clazz) {
+        return request.uri(uri)
                 .retrieve()
                 .onStatus(HttpStatusCode::isError, response -> response.bodyToMono(ApiErrorResponse.class)
                         .flatMap(error -> Mono.error(new ResponseStatusException(HttpStatus.valueOf(error.code())))))
-                .bodyToMono(Link.class)
+                .bodyToMono(clazz)
                 .block();
     }
 
-    public Link removeLink(long chatId, Link link) {
-        return webClient
-                .method(HttpMethod.DELETE)
-                .uri(LINKS_PATH + chatId)
-                .bodyValue(link)
+    private <T, R> R execRequestWithBody(WebClient.RequestBodyUriSpec request, String uri, Class<R> clazz, T body) {
+        return request.uri(uri)
+                .bodyValue(body)
                 .retrieve()
                 .onStatus(HttpStatusCode::isError, response -> response.bodyToMono(ApiErrorResponse.class)
                         .flatMap(error -> Mono.error(new ResponseStatusException(HttpStatus.valueOf(error.code())))))
-                .bodyToMono(Link.class)
+                .bodyToMono(clazz)
                 .block();
     }
 
     private Mono<ClientResponse> renderApiErrorResponse(ClientResponse clientResponse) {
         if (clientResponse.statusCode().isError()) {
-            LOG.atInfo()
+            log.atError()
                     .addKeyValue("api_error_response", clientResponse.statusCode())
                     .log();
             return clientResponse
@@ -103,7 +93,8 @@ public class ScrapperClient {
 
     private ExchangeFilterFunction logRequest() {
         return ExchangeFilterFunction.ofRequestProcessor(clientRequest -> {
-            var log = LOG.atInfo()
+            var log = ScrapperClient.log
+                    .atDebug()
                     .addKeyValue("request_method", clientRequest.method())
                     .addKeyValue("request_url", clientRequest.url());
             var headers = clientRequest.headers().asSingleValueMap();
@@ -117,7 +108,7 @@ public class ScrapperClient {
 
     private ExchangeFilterFunction logResponse() {
         return ExchangeFilterFunction.ofResponseProcessor(clientResponse -> {
-            var log = LOG.atInfo().addKeyValue("response_status", clientResponse.statusCode());
+            var log = ScrapperClient.log.atDebug().addKeyValue("response_status", clientResponse.statusCode());
             var headers = clientResponse.headers().asHttpHeaders().asSingleValueMap();
             for (var entry : headers.entrySet()) {
                 log = log.addKeyValue(entry.getKey(), entry.getValue());

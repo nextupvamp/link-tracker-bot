@@ -1,8 +1,13 @@
 package backend.academy.bot.service;
 
-import backend.academy.bot.controller.LinkUpdate;
+import backend.academy.bot.dto.LinkUpdate;
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.request.SendMessage;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Set;
+import java.util.TimeZone;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -12,12 +17,35 @@ public class UpdateSender {
     private final TelegramBot bot;
 
     public void sendUpdates(LinkUpdate linkUpdate) {
-        // notify all the subscribers about update on the one url
-        String message = "New update on " + linkUpdate.url() + " : " + linkUpdate.description();
-
-        var chats = linkUpdate.tgChatsId();
-        for (var id : chats) {
-            bot.execute(new SendMessage(id, message));
+        var chats = linkUpdate.chats();
+        for (var chat : chats.entrySet()) {
+            bot.execute(new SendMessage(chat.getKey(), getMessage(linkUpdate, chat.getValue())));
         }
+    }
+
+    private String getMessage(LinkUpdate linkUpdate, Set<String> tags) {
+        StringBuilder message = new StringBuilder();
+
+        message.append("Tags: ");
+        tags.forEach(tag -> message.append(tag).append(' '));
+        message.append('\n');
+
+        message.append("New update on ").append(linkUpdate.url()).append(" :\n");
+        message.append("From ")
+                .append(linkUpdate.username())
+                .append(" on ")
+                .append(epochToString(linkUpdate.time()))
+                .append('\n');
+        message.append("Topic: ").append(linkUpdate.topic()).append('\n');
+        message.append(linkUpdate.preview());
+
+        return message.toString();
+    }
+
+    private String epochToString(long epochSecond) {
+        Date date = new Date(epochSecond * 1000L);
+        DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+        format.setTimeZone(TimeZone.getTimeZone("Etc/UTC"));
+        return format.format(date);
     }
 }

@@ -1,4 +1,14 @@
 services:
+  postgresql:
+    build: /postgres
+    image: "postgres:17-alpine"
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    network_mode: host
+
   bot:
     build: /bot
     depends_on:
@@ -8,8 +18,28 @@ services:
     env_file:
       - bot/bot.env
     network_mode: host
+    restart: on-failure
+
   scrapper:
     build: /scrapper
+    depends_on:
+      - liquibase-migrations
     ports:
       - "8081:8081"
     network_mode: host
+
+  liquibase-migrations:
+    container_name: migrations
+    image: liquibase/liquibase:4.29
+    depends_on:
+      - postgresql
+    command:
+      - --searchPath=/changesets
+      - --changelog-file=master.xml
+      - --driver=org.postgresql.Driver
+      - --url=jdbc:postgresql://localhost:5432/postgres
+      - --username=postgres
+      - --password=postgres
+      - update
+    volumes:
+      - ./migrations:/changesets

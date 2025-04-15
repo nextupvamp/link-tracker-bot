@@ -1,20 +1,26 @@
 package backend.academy.scrapper.service;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
-import backend.academy.scrapper.controller.AddLinkRequest;
+import backend.academy.scrapper.client.PingClient;
+import backend.academy.scrapper.dto.AddLinkRequest;
 import backend.academy.scrapper.model.Chat;
+import backend.academy.scrapper.model.ChatState;
 import backend.academy.scrapper.model.Link;
 import backend.academy.scrapper.model.Site;
 import backend.academy.scrapper.model.Subscription;
-import backend.academy.scrapper.repository.ChatRepository;
-import backend.academy.scrapper.repository.SubscriptionRepository;
+import backend.academy.scrapper.repository.chat.ChatRepository;
+import backend.academy.scrapper.repository.subscription.SubscriptionRepository;
+import backend.academy.scrapper.service.chat.ChatServiceImpl;
 import java.util.Optional;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
@@ -33,41 +39,49 @@ public class ChatServiceTest {
     @Mock
     private SubscriptionRepository subRepo;
 
+    @Mock
+    private PingClient pingClient;
+
     @InjectMocks
-    private ChatService chatService;
+    private ChatServiceImpl chatService;
 
     @Test
     public void testAddLink() {
         var link = new AddLinkRequest("https://github.com/oleg/tee", Set.of("tag"), Set.of("fil:ter"));
-        doReturn(Optional.of(new Chat(0L))).when(chatRepo).findById(anyLong());
-        var addedLink = chatService.addLink(0L, link);
-        assertEquals(new Link("https://github.com/oleg/tee", Set.of("tag"), Set.of("fil:ter")), addedLink);
+        var chat = new Chat(0L, ChatState.DEFAULT);
+        doReturn(Optional.of(chat)).when(chatRepo).findById(anyLong());
+        doReturn(true).when(pingClient).ping(anyString());
+        chatService.addLink(0L, link);
+        verify(chatRepo, times(1)).save(eq(chat));
+        verify(subRepo, times(1)).save(any(Subscription.class));
     }
 
     @Test
     public void testDeleteLink() {
-        var chat = new Chat(0L);
+        var chat = new Chat(0L, ChatState.DEFAULT);
         var link = new Link("https://github.com/oleg/tee");
         chat.links().add(link);
         var subscription = new Subscription("https://github.com/oleg/tee", Site.GITHUB);
         subscription.subscribers().add(chat);
 
-        doReturn(Optional.of(subscription)).when(subRepo).findByUrl(anyString());
+        doReturn(Optional.of(subscription)).when(subRepo).findById(anyString());
         doReturn(Optional.of(chat)).when(chatRepo).findById(anyLong());
 
-        var deletedLink = chatService.deleteLink(0L, "https://github.com/oleg/tee");
+        chatService.deleteLink(0L, "https://github.com/oleg/tee");
 
         assertAll(
-                () -> assertEquals(link, deletedLink),
                 () -> assertTrue(subscription.subscribers().isEmpty()),
                 () -> assertTrue(chat.links().isEmpty()));
+
+        verify(chatRepo, times(1)).save(eq(chat));
+        verify(subRepo, times(1)).delete(any(Subscription.class));
     }
 
     @ParameterizedTest
     @ValueSource(strings = {"url, https://githab.com/oleg/tee, https://stackoverflow/questons/1234"})
     public void testIncorrectLinkValidation(String url) {
         var link = new AddLinkRequest(url, Set.of("tag"), Set.of("fil:ter"));
-        doReturn(Optional.of(new Chat(0L))).when(chatRepo).findById(anyLong());
+        doReturn(Optional.of(new Chat(0L, ChatState.DEFAULT))).when(chatRepo).findById(anyLong());
         assertThrows(IllegalArgumentException.class, () -> chatService.addLink(0L, link));
     }
 
@@ -80,30 +94,11 @@ public class ChatServiceTest {
             })
     public void testCorrectLinkValidation(String url) {
         var link = new AddLinkRequest(url, Set.of("tag"), Set.of("fil:ter"));
-        doReturn(Optional.of(new Chat(0L))).when(chatRepo).findById(anyLong());
-        assertEquals(new Link(url, Set.of("tag"), Set.of("fil:ter")), chatService.addLink(0L, link));
-    }
-
-    // everything is stored in sets or maps so there are no special logic
-    // to handle that situation, the link will just be rewritten
-    @Test
-    public void testAddExistingLink() {
-        var link = new AddLinkRequest(
-                "https://github.com/vampnextup/logs-analyzer-service", Set.of("tag"), Set.of("fil:ter"));
-        doReturn(Optional.of(new Chat(0L))).when(chatRepo).findById(anyLong());
+        var chat = new Chat(0L, ChatState.DEFAULT);
+        doReturn(Optional.of(chat)).when(chatRepo).findById(anyLong());
+        doReturn(true).when(pingClient).ping(anyString());
         chatService.addLink(0L, link);
-        var newLink = new AddLinkRequest(
-                "https://github.com/vampnextup/logs-analyzer-service", Set.of("oleg"), Set.of("tin:kov"));
-        chatService.addLink(0L, newLink);
-
-        assertAll(
-                () -> assertTrue(chatService
-                        .getAllLinks(0L)
-                        .links()
-                        .contains(new Link(
-                                "https://github.com/vampnextup/logs-analyzer-service",
-                                Set.of("oleg"),
-                                Set.of("tin:kov")))),
-                () -> assertEquals(1, chatService.getAllLinks(0L).links().size()));
+        verify(chatRepo, times(1)).save(eq(chat));
+        verify(subRepo, times(1)).save(any(Subscription.class));
     }
 }

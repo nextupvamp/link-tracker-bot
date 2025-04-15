@@ -1,27 +1,42 @@
 package backend.academy.bot.service;
 
-import backend.academy.bot.client.ScrapperClient;
-import backend.academy.bot.repository.ChatStateRepository;
-import java.util.EnumSet;
-import lombok.AllArgsConstructor;
+import backend.academy.bot.service.commands.BotCommand;
+import java.util.List;
+import lombok.Getter;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 @Service
-@AllArgsConstructor
 public class MessageHandler {
-    private static final EnumSet<Command> COMMANDS = EnumSet.allOf(Command.class);
+    @Getter
+    private final List<BotCommand> commands;
 
-    private final ChatStateRepository chatStateRepository;
-    private final ScrapperClient scrapperClient;
+    private final BotCommand plainTextCommand;
+
+    public MessageHandler(
+            @Autowired(required = false) List<BotCommand> commands,
+            @Autowired(required = false) @Qualifier("plainTextCommand") BotCommand plainTextCommand) {
+        this.commands = commands;
+        this.plainTextCommand = plainTextCommand;
+    }
 
     public String handle(long chatId, String text) {
+        if (commands == null) {
+            return "No commands specified";
+        }
+
         String[] tokens = text.split(" ");
-        for (var command : COMMANDS) {
+        for (var command : commands) {
             if (tokens[0].equals(command.command())) {
-                return command.execute(chatId, tokens, chatStateRepository, scrapperClient);
+                return command.execute(chatId, tokens);
             }
         }
-        // this command responds for plain text
-        return Command.TRACK_STAGE.execute(chatId, tokens, chatStateRepository, scrapperClient);
+
+        if (plainTextCommand != null) {
+            return plainTextCommand.execute(chatId, tokens);
+        }
+
+        return "Cannot handle this command";
     }
 }

@@ -8,17 +8,22 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import backend.academy.bot.BotConfigProperties;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.ResponseStatusException;
 
 public class ScrapperClientTest {
     @Rule
-    public WireMockRule wireMockRule = new WireMockRule(8080);
+    public WireMockRule wireMockRule = new WireMockRule(1487);
 
-    private final ScrapperClient scrapperClient = new ScrapperClient("http://localhost:8080");
+    private final BotConfigProperties config =
+            new BotConfigProperties(null, "http://localhost:1487", null, "/tg-chat/", "/links?Tg-Chat-Id=");
+
+    private final ScrapperClient scrapperClient = new ScrapperClient(WebClient.builder(), config);
 
     // basically, any of 4xx and 5xx statuses will cause a ResponseStatusException with appropriate
     // status code in it

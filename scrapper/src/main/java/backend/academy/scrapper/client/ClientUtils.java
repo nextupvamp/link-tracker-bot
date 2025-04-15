@@ -1,6 +1,6 @@
 package backend.academy.scrapper.client;
 
-import backend.academy.scrapper.exception.ApiErrorResponse;
+import backend.academy.scrapper.dto.ApiErrorResponse;
 import lombok.experimental.UtilityClass;
 import org.slf4j.Logger;
 import org.springframework.web.reactive.function.client.ClientResponse;
@@ -12,7 +12,7 @@ import reactor.core.publisher.Mono;
 public class ClientUtils {
     public static ExchangeFilterFunction logRequest(Logger logger) {
         return ExchangeFilterFunction.ofRequestProcessor(clientRequest -> {
-            var log = logger.atInfo()
+            var log = logger.atDebug()
                     .addKeyValue("request_method", clientRequest.method())
                     .addKeyValue("request_url", clientRequest.url());
             var headers = clientRequest.headers().asSingleValueMap();
@@ -26,7 +26,7 @@ public class ClientUtils {
 
     public static ExchangeFilterFunction logResponse(Logger logger) {
         return ExchangeFilterFunction.ofResponseProcessor(clientResponse -> {
-            var log = logger.atInfo().addKeyValue("response_status", clientResponse.statusCode());
+            var log = logger.atDebug().addKeyValue("response_status", clientResponse.statusCode());
             var headers = clientResponse.headers().asHttpHeaders().asSingleValueMap();
             for (var entry : headers.entrySet()) {
                 log = log.addKeyValue(entry.getKey(), entry.getValue());
@@ -38,7 +38,7 @@ public class ClientUtils {
 
     public static Mono<ClientResponse> renderApiErrorResponse(ClientResponse clientResponse, Logger logger) {
         if (clientResponse.statusCode().isError()) {
-            logger.atInfo()
+            logger.atError()
                     .addKeyValue("api_error_response", clientResponse.statusCode())
                     .log();
             return clientResponse

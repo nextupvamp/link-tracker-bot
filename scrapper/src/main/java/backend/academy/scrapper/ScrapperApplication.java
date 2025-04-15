@@ -1,34 +1,42 @@
 package backend.academy.scrapper;
 
-import backend.academy.scrapper.client.BotClient;
-import backend.academy.scrapper.client.GitHubCheckUpdateClient;
-import backend.academy.scrapper.client.StackOverflowCheckUpdateClient;
+import java.sql.SQLException;
+import javax.sql.DataSource;
+import liquibase.Contexts;
+import liquibase.LabelExpression;
+import liquibase.Liquibase;
+import liquibase.changelog.DatabaseChangeLog;
+import liquibase.database.Database;
+import liquibase.database.DatabaseFactory;
+import liquibase.database.jvm.JdbcConnection;
+import liquibase.exception.LiquibaseException;
+import liquibase.resource.ClassLoaderResourceAccessor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
-@EnableConfigurationProperties({ScrapperConfig.class})
+@EnableConfigurationProperties({ScrapperConfigProperties.class})
 @EnableScheduling
+@Slf4j
 public class ScrapperApplication {
     public static void main(String[] args) {
-        SpringApplication.run(ScrapperApplication.class, args);
-    }
+        var context = SpringApplication.run(ScrapperApplication.class, args);
+        var dataSource = context.getBean(DataSource.class);
+        try (var connection = dataSource.getConnection()) {
+            Database database =
+                    DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(connection));
 
-    @Bean
-    public BotClient botClient(ScrapperConfig scrapperConfig) {
-        return new BotClient(scrapperConfig.botUrl());
-    }
+            DatabaseChangeLog changelog = new DatabaseChangeLog("migrations/master.xml");
 
-    @Bean
-    public GitHubCheckUpdateClient gitHubClient(ScrapperConfig scrapperConfig) {
-        return new GitHubCheckUpdateClient(scrapperConfig.gitHubApiUrl());
-    }
+            Liquibase liquibase = new Liquibase(changelog, new ClassLoaderResourceAccessor(), database);
 
-    @Bean
-    public StackOverflowCheckUpdateClient stackOverflowClient(ScrapperConfig scrapperConfig) {
-        return new StackOverflowCheckUpdateClient(scrapperConfig.stackExchangeApiUrl());
+            liquibase.update(new Contexts(), new LabelExpression());
+        } catch (LiquibaseException | SQLException e) {
+            log.info("Liquibase migration has been failed");
+        }
+        log.info("Liquibase migration has been executed successfully");
     }
 }

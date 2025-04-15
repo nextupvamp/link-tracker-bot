@@ -1,100 +1,91 @@
 package backend.academy.scrapper.controller;
 
-import backend.academy.scrapper.model.Link;
-import backend.academy.scrapper.service.ChatService;
+import backend.academy.scrapper.dto.AddLinkRequest;
+import backend.academy.scrapper.dto.ChatData;
+import backend.academy.scrapper.dto.LinkSet;
+import backend.academy.scrapper.dto.RemoveLinkRequest;
+import backend.academy.scrapper.service.chat.ChatService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+@Slf4j
 @RestController
 @AllArgsConstructor
 public class ScrapperController {
-    private static final Logger LOG = LoggerFactory.getLogger(ScrapperController.class);
-    private static final ObjectMapper MAPPER = new ObjectMapper();
-
+    private final ObjectMapper mapper;
     private final ChatService chatService;
 
-    @PostMapping("tg-chat/{id}")
-    public void newChat(@PathVariable("id") long id) {
-        if (id < 0) {
-            throw new IllegalArgumentException("ID cannot be negative");
-        }
+    @GetMapping("tg-chat/{id}")
+    public ChatData getChatData(@Positive @PathVariable long id) {
+        log.atInfo().addKeyValue("request id", id).log();
 
-        LOG.atInfo().addKeyValue("request id", id).log();
+        return chatService.getChatData(id);
+    }
+
+    @PatchMapping("tg-chat")
+    @SneakyThrows
+    public void updateChatData(@Valid @RequestBody ChatData chat) {
+        log.atInfo().addKeyValue("request", mapper.writeValueAsString(chat)).log();
+
+        chatService.updateChatData(chat);
+    }
+
+    @PostMapping("tg-chat/{id}")
+    public void newChat(@Positive @PathVariable("id") long id) {
+        log.atInfo().addKeyValue("request id", id).log();
 
         chatService.addChat(id);
     }
 
     @DeleteMapping("tg-chat/{id}")
-    public void deleteChat(@PathVariable("id") long id) {
-        if (id < 0) {
-            throw new IllegalArgumentException("ID cannot be negative");
-        }
-
-        LOG.atInfo().addKeyValue("request id", id).log();
+    public void deleteChat(@Positive @PathVariable("id") long id) {
+        log.atInfo().addKeyValue("request id", id).log();
 
         chatService.deleteChat(id);
     }
 
     @GetMapping("links")
-    public LinkSet getAllLinks(@RequestParam("Tg-Chat-Id") long id) {
-        if (id < 0) {
-            throw new IllegalArgumentException("ID cannot be negative");
-        }
-
-        LOG.atInfo().addKeyValue("request id", id).log();
+    public LinkSet getAllLinks(@Positive @RequestParam("Tg-Chat-Id") long id) {
+        log.atInfo().addKeyValue("request id", id).log();
 
         var response = chatService.getAllLinks(id);
 
-        LOG.atInfo().addKeyValue("response", response).log();
+        log.atInfo().addKeyValue("response", response).log();
 
         return response;
     }
 
     @PostMapping("links")
     @SneakyThrows
-    public Link addLink(@RequestParam("Tg-Chat-Id") long id, @RequestBody AddLinkRequest link) {
-        if (id < 0) {
-            throw new IllegalArgumentException("ID cannot be negative");
-        }
-
-        LOG.atInfo()
+    public void addLink(@Positive @RequestParam("Tg-Chat-Id") long id, @RequestBody AddLinkRequest link) {
+        log.atInfo()
                 .addKeyValue("request id", id)
-                .addKeyValue("request body", MAPPER.writeValueAsString(link))
+                .addKeyValue("request body", mapper.writeValueAsString(link))
                 .log();
 
-        var response = chatService.addLink(id, link);
-
-        LOG.atInfo().addKeyValue("response", response).log();
-
-        return response;
+        chatService.addLink(id, link);
     }
 
     @DeleteMapping("links")
     @SneakyThrows
-    public Link deleteLink(@RequestParam("Tg-Chat-Id") long id, @RequestBody RemoveLinkRequest link) {
-        if (id < 0) {
-            throw new IllegalArgumentException("ID cannot be negative");
-        }
-
-        LOG.atInfo()
+    public void deleteLink(@Positive @RequestParam("Tg-Chat-Id") long id, @RequestBody RemoveLinkRequest link) {
+        log.atInfo()
                 .addKeyValue("request id", id)
-                .addKeyValue("request body", MAPPER.writeValueAsString(link))
+                .addKeyValue("request body", mapper.writeValueAsString(link))
                 .log();
 
-        var response = chatService.deleteLink(id, link.url());
-
-        LOG.atInfo().addKeyValue("response", response).log();
-
-        return response;
+        chatService.deleteLink(id, link.url());
     }
 }
