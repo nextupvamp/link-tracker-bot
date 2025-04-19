@@ -4,7 +4,6 @@ import backend.academy.bot.dto.LinkUpdate;
 import lombok.AllArgsConstructor;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
-import org.apache.kafka.common.errors.SerializationException;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
@@ -22,10 +21,8 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.listener.CommonLoggingErrorHandler;
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 import org.springframework.kafka.listener.ContainerProperties;
-import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
-import org.springframework.kafka.support.serializer.JsonSerializer;
 
 @Configuration
 @ConditionalOnProperty(prefix = "app", name = "message-transport", havingValue = "kafka")
@@ -51,11 +48,11 @@ public class KafkaConfig {
 
     @Bean
     public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, LinkUpdate>>
-            kafkaListenerContainerFactory() {
+            kafkaListenerContainerFactory(ConsumerFactory<String, LinkUpdate> consumerFactory) {
         var factory = new ConcurrentKafkaListenerContainerFactory<String, LinkUpdate>();
 
         factory.setCommonErrorHandler(new CommonLoggingErrorHandler());
-        factory.setConsumerFactory(consumerFactory());
+        factory.setConsumerFactory(consumerFactory);
         factory.setConcurrency(configProperties.concurrency());
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL);
         factory.setAutoStartup(true);

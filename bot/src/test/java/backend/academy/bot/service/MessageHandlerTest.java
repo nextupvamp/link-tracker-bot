@@ -4,9 +4,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import backend.academy.bot.client.ScrapperClient;
+import backend.academy.bot.config.RedisTestConfiguration;
 import backend.academy.bot.dto.LinkSet;
 import backend.academy.bot.model.ChatData;
 import backend.academy.bot.model.ChatState;
@@ -23,9 +27,13 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cache.CacheManager;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
+@Import(RedisTestConfiguration.class)
 @SpringBootTest
+@TestPropertySource(properties = {"app.message-transport=http"})
 public class MessageHandlerTest {
     private static final String LF = "\n";
 
@@ -44,6 +52,39 @@ public class MessageHandlerTest {
         for (var cacheName : caches) {
             cacheManager.getCache(cacheName).clear();
         }
+    }
+
+    @Test
+    public void testListIsCached() {
+        var link = new Link("url");
+        var links = new LinkedHashSet<Link>();
+        links.add(link);
+
+        doReturn(new ChatData(0L, ChatState.DEFAULT, null, null)).when(scrapper).getChatData(anyLong());
+        doReturn(new LinkSet(links, 1)).when(scrapper).getAllLinks(anyLong());
+        messageHandler.handle(0L, "/list");
+        messageHandler.handle(0L, "/list");
+
+        verify(scrapper, times(1)).getAllLinks(eq(0L));
+    }
+
+    @Test
+    public void testIsCacheEvicted() {
+        var link = new Link("url");
+        var links = new LinkedHashSet<Link>();
+        links.add(link);
+
+        doReturn(new ChatData(0L, ChatState.DEFAULT, null, links))
+                .when(scrapper)
+                .getChatData(anyLong());
+        doReturn(new LinkSet(links, 1)).when(scrapper).getAllLinks(anyLong());
+        messageHandler.handle(0L, "/list");
+
+        messageHandler.handle(0L, "/add_tag url tag");
+
+        messageHandler.handle(0L, "/list");
+
+        verify(scrapper, times(2)).getAllLinks(eq(0L));
     }
 
     @ParameterizedTest

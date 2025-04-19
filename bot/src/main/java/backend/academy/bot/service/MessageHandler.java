@@ -3,7 +3,6 @@ package backend.academy.bot.service;
 import backend.academy.bot.service.commands.BotCommand;
 import java.util.List;
 import lombok.Getter;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
@@ -14,9 +13,7 @@ public class MessageHandler {
 
     private final BotCommand plainTextCommand;
 
-    public MessageHandler(
-            @Autowired(required = false) List<BotCommand> commands,
-            @Autowired(required = false) @Qualifier("plainTextCommand") BotCommand plainTextCommand) {
+    public MessageHandler(List<BotCommand> commands, @Qualifier("plainTextCommand") BotCommand plainTextCommand) {
         this.commands = commands;
         this.plainTextCommand = plainTextCommand;
     }

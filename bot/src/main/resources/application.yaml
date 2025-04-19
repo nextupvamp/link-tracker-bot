@@ -10,6 +10,9 @@ app:
   kafka:
     concurrency: 3
     group-id: group
+    listener-topic: updates
+    partitions: 0-2
+    attempts: 1
 
 
 spring:
