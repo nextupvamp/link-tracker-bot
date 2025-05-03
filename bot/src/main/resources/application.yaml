@@ -4,15 +4,18 @@ app:
   set-commands-url-format: https://api.telegram.org/bot%s/setMyCommands
   tg-chat-path: /tg-chat
   link-path: /links?Tg-Chat-Id=
-  message-transport: kafka
+  enable-kafka: true
   cache:
     cache-ttl: 5
   kafka:
     concurrency: 3
     group-id: group
-    listener-topic: updates
-    partitions: 0-2
-    attempts: 1
+    topic: updates
+    retry:
+      attempts: 1
+      multiplier: 2
+      delay: 5000
+
 
 
 spring:
@@ -25,12 +28,12 @@ spring:
       fetch.max.wait.ms: 10000
       max.poll.interval.ms: 10000
       max.poll.records: 10
-      bootstrap-servers: localhost:19092, localhost:29092
+      bootstrap-servers: localhost:19092, localhost:29092, localhost:9092
 
       producer.properties:
         spring:
             json.add.type.headers: false
-        bootstrap-servers: localhost:19092, localhost:29092
+        bootstrap-servers: localhost:19092, localhost:29092, localhost:9092
   application:
     name: Bot
   liquibase:

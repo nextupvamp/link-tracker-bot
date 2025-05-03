@@ -11,7 +11,7 @@ app:
   page-size: 50
   preview-size: 200
   access-type: jpa
-  message-transport: kafka
+  enable-kafka: true
   kafka:
     topic: update
     partitions: 3

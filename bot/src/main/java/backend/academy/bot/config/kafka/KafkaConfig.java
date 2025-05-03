@@ -11,7 +11,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.kafka.annotation.EnableKafka;
+import org.springframework.kafka.annotation.EnableKafkaRetryTopic;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.config.KafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
@@ -23,11 +23,13 @@ import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @Configuration
-@ConditionalOnProperty(prefix = "app", name = "message-transport", havingValue = "kafka")
-@EnableKafka
+@ConditionalOnProperty(prefix = "app", name = "enable-kafka", havingValue = "true")
+@EnableKafkaRetryTopic
 @AllArgsConstructor
+@EnableScheduling
 public class KafkaConfig {
     private final KafkaProperties kafkaProperties;
     private final KafkaConfigProperties configProperties;

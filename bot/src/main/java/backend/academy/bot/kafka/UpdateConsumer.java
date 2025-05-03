@@ -8,7 +8,6 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.annotation.RetryableTopic;
-import org.springframework.kafka.annotation.TopicPartition;
 import org.springframework.kafka.retrytopic.TopicSuffixingStrategy;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.retry.annotation.Backoff;
@@ -16,20 +15,18 @@ import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-@ConditionalOnProperty(prefix = "app", name = "message-transport", havingValue = "kafka")
+@ConditionalOnProperty(prefix = "app", name = "enable-kafka", havingValue = "true")
 @AllArgsConstructor
 public class UpdateConsumer {
     private final UpdateSender updateSender;
 
-    @KafkaListener(
-            topicPartitions = {
-                @TopicPartition(
-                        topic = "${app.kafka.topic}",
-                        partitions = {"${app.kafka.partitions}"})
-            })
+    @KafkaListener(topics = {"${app.kafka.topic}"})
     @RetryableTopic(
-            attempts = "${app.kafka.attempts}",
-            backoff = @Backoff(delay = 1000, multiplier = 2),
+            attempts = "${app.kafka.retry.attempts}",
+            backoff =
+                    @Backoff(
+                            delayExpression = "${app.kafka.retry.delay}",
+                            multiplierExpression = "${app.kafka.retry.multiplier}"),
             topicSuffixingStrategy = TopicSuffixingStrategy.SUFFIX_WITH_INDEX_VALUE,
             kafkaTemplate = "kafkaTemplate")
     public void consume(ConsumerRecord<String, LinkUpdate> record, Acknowledgment ack) {

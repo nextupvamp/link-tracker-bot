@@ -8,6 +8,6 @@ import org.springframework.validation.annotation.Validated;
 
 @Validated
 @ConfigurationProperties(prefix = "app.kafka")
-@ConditionalOnProperty(prefix = "app", name = "message-transport", havingValue = "kafka")
+@ConditionalOnProperty(prefix = "app", name = "enable-kafka", havingValue = "true")
 public record KafkaConfigProperties(
         @NotEmpty String topic, @Positive int partitions, @Positive short replicationFactor) {}

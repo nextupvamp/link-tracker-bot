@@ -12,6 +12,8 @@ import org.springframework.stereotype.Component;
 @AllArgsConstructor
 @Component
 public class HelpCommand implements BotCommand {
+    private static final String MANUAL_FILE = "manual.txt";
+
     private final ScrapperClient scrapperClient;
     private final CommandCommons commons;
 
@@ -24,7 +26,7 @@ public class HelpCommand implements BotCommand {
         }
 
         try (BufferedReader br = new BufferedReader(new InputStreamReader(
-                Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("manual.txt"))))) {
+                Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream(MANUAL_FILE))))) {
             return br.lines().collect(Collectors.joining());
         } catch (Exception e) {
             return "Nobody will help you.";

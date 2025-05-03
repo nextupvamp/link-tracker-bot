@@ -18,14 +18,16 @@ public class UpdateSender {
 
     public void sendUpdates(LinkUpdate linkUpdate) {
         var chats = linkUpdate.chats();
-        for (var chat : chats) {
-            String userFilter = null;
-            if (chat.filters() != null) {
-                userFilter = chat.filters().get("user");
-            }
+        if (chats != null) {
+            for (var chat : chats) {
+                String userFilter = null;
+                if (chat.filters() != null) {
+                    userFilter = chat.filters().get("user");
+                }
 
-            if (userFilter == null || !userFilter.equals(linkUpdate.username())) {
-                bot.execute(new SendMessage(chat.id(), getMessage(linkUpdate, chat.tags())));
+                if (userFilter == null || !userFilter.equals(linkUpdate.username())) {
+                    bot.execute(new SendMessage(chat.id(), getMessage(linkUpdate, chat.tags())));
+                }
             }
         }
     }

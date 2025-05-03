@@ -36,7 +36,7 @@ public class Chat {
     @Enumerated(EnumType.STRING)
     private ChatState state;
 
-    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "curr_edited_link")
     private Link currentEditedLink;
 

@@ -5,11 +5,10 @@ import backend.academy.scrapper.dto.Update;
 import backend.academy.scrapper.model.Subscription;
 import java.util.List;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-@AllArgsConstructor(onConstructor_ = {@Autowired(required = false)})
+@AllArgsConstructor
 public class UpdateCheckersChain {
     private final List<CheckUpdateClient> checkers;
 

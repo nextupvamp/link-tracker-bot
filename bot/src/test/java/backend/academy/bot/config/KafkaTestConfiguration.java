@@ -6,7 +6,6 @@ import java.util.Map;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
-import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.boot.devtools.restart.RestartScope;
@@ -53,12 +52,12 @@ public class KafkaTestConfiguration {
     }
 
     @Bean
-    public KafkaTemplate<String, byte[]> byteArrayKafkaTemplate(KafkaContainer kafka) {
+    public KafkaTemplate<String, String> stringKafkaTemplate(KafkaContainer kafka) {
         var properties = new HashMap<String, Object>();
 
         properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafka.getBootstrapServers());
         properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, ByteArraySerializer.class);
+        properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
 
         return new KafkaTemplate<>(new DefaultKafkaProducerFactory<>(properties));
     }

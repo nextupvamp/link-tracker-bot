@@ -7,122 +7,61 @@ import backend.academy.scrapper.model.ChatState;
 import backend.academy.scrapper.model.Link;
 import backend.academy.scrapper.model.Site;
 import backend.academy.scrapper.model.Subscription;
-import backend.academy.scrapper.repository.chat.ChatJdbcRepository;
+import backend.academy.scrapper.repository.CommonPostgresJdbcTest;
 import java.util.Map;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.web.reactive.function.client.WebClient;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
-@JdbcTest
-@Import({ChatJdbcRepository.class, SubscriptionJdbcRepository.class})
-@Testcontainers
-@TestPropertySource(properties = "app.access-type=jdbc")
-public class SubscriptionJdbcRepositoryTest {
+public class SubscriptionJdbcRepositoryTest extends CommonPostgresJdbcTest {
     private static final String URL = "url";
     private static final Site SITE = Site.GITHUB;
+    private static final Subscription SUBSCRIPTION;
 
-    @Autowired
-    private SubscriptionJdbcRepository repository;
+    static {
+        SUBSCRIPTION = new Subscription(URL, SITE);
 
-    @Container
-    private static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:17-alpine");
+        Chat subscriber1 = new Chat(123L, ChatState.DEFAULT);
+        Link currentEditedLink1 = new Link(URL, Set.of("tag1", "tag2"), Map.of("filter1", "filter2"));
+        subscriber1.currentEditedLink(currentEditedLink1);
+        subscriber1.links().add(currentEditedLink1);
+        subscriber1.links().add(new Link("link"));
 
-    @DynamicPropertySource
-    public static void configureProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", postgres::getJdbcUrl);
-        registry.add("spring.datasource.username", postgres::getUsername);
-        registry.add("spring.datasource.password", postgres::getPassword);
-        WebClient.builder().build();
+        Chat subscriber2 = new Chat(124L, ChatState.DEFAULT);
+        Link currentEditedLink2 = new Link(URL + 1, Set.of("tagg1", "tagg2"), Map.of("filterr1", "filterr2"));
+        subscriber2.currentEditedLink(currentEditedLink2);
+        subscriber2.links().add(currentEditedLink2);
+        subscriber2.links().add(new Link("linkk"));
+
+        SUBSCRIPTION.subscribers().add(subscriber1);
+        SUBSCRIPTION.subscribers().add(subscriber2);
     }
 
     @Test
-    @DirtiesContext
     public void testSaveAndFindById() {
-        Subscription expected = new Subscription(URL, SITE);
+        subscriptionRepository.save(SUBSCRIPTION);
 
-        Chat subscriber1 = new Chat(123L, ChatState.DEFAULT);
-        Link currentEditedLink1 = new Link(URL, Set.of("tag1", "tag2"), Map.of("filter1", "filter2"));
-        subscriber1.currentEditedLink(currentEditedLink1);
-        subscriber1.links().add(currentEditedLink1);
-        subscriber1.links().add(new Link("link"));
-
-        Chat subscriber2 = new Chat(124L, ChatState.DEFAULT);
-        Link currentEditedLink2 = new Link(URL + 1, Set.of("tagg1", "tagg2"), Map.of("filterr1", "filterr2"));
-        subscriber2.currentEditedLink(currentEditedLink2);
-        subscriber2.links().add(currentEditedLink2);
-        subscriber2.links().add(new Link("linkk"));
-
-        expected.subscribers().add(subscriber1);
-        expected.subscribers().add(subscriber2);
-
-        repository.save(expected);
-
-        assertThat(expected).isEqualTo(repository.findById(URL).orElseThrow());
+        assertThat(SUBSCRIPTION).isEqualTo(subscriptionRepository.findById(URL).orElseThrow());
     }
 
     @Test
-    @DirtiesContext
     public void testFindAll() {
-        Subscription expected1 = new Subscription(URL, SITE);
+        Subscription subscription2 = new Subscription(URL + 1, SITE);
 
-        Chat subscriber1 = new Chat(123L, ChatState.DEFAULT);
-        Link currentEditedLink1 = new Link(URL, Set.of("tag1", "tag2"), Map.of("filter1", "filter2"));
-        subscriber1.currentEditedLink(currentEditedLink1);
-        subscriber1.links().add(currentEditedLink1);
-        subscriber1.links().add(new Link("link"));
+        subscriptionRepository.save(SUBSCRIPTION);
+        subscriptionRepository.save(subscription2);
 
-        Chat subscriber2 = new Chat(124L, ChatState.DEFAULT);
-        Link currentEditedLink2 = new Link(URL + 1, Set.of("tagg1", "tagg2"), Map.of("filterr1", "filterr2"));
-        subscriber2.currentEditedLink(currentEditedLink2);
-        subscriber2.links().add(currentEditedLink2);
-        subscriber2.links().add(new Link("linkk"));
-
-        expected1.subscribers().add(subscriber1);
-        expected1.subscribers().add(subscriber2);
-
-        Subscription expected2 = new Subscription(URL + 1, SITE);
-
-        expected2.subscribers().add(subscriber1);
-        expected2.subscribers().add(subscriber2);
-
-        repository.save(expected1);
-        repository.save(expected2);
-
-        var result = repository.findAll(PageRequest.of(0, 2));
+        var result = subscriptionRepository.findAll(PageRequest.of(0, 2));
 
         assertThat(result).hasSize(2);
-        assertThat(result).containsExactly(expected1, expected2);
+        assertThat(result).containsExactly(SUBSCRIPTION, subscription2);
     }
 
     @Test
-    @DirtiesContext
     public void testDelete() {
-        Subscription expected = new Subscription(URL, SITE);
-
-        Chat subscriber1 = new Chat(123L, ChatState.DEFAULT);
-        Link currentEditedLink1 = new Link(URL, Set.of("tag1", "tag2"), Map.of("filter1", "filter2"));
-        subscriber1.currentEditedLink(currentEditedLink1);
-        subscriber1.links().add(currentEditedLink1);
-        subscriber1.links().add(new Link("link"));
-
-        Chat subscriber2 = new Chat(124L, ChatState.DEFAULT);
-        Link currentEditedLink2 = new Link(URL + 1, Set.of("tagg1", "tagg2"), Map.of("filterr1", "filterr2"));
-        subscriber2.currentEditedLink(currentEditedLink2);
-        subscriber2.links().add(currentEditedLink2);
-        subscriber2.links().add(new Link("linkk"));
-
-        expected.subscribers().add(subscriber1);
-        expected.subscribers().add(subscriber2);
+        subscriptionRepository.save(SUBSCRIPTION);
+        assertThat(subscriptionRepository.findAll(PageRequest.of(0, 2))).hasSize(1);
+        subscriptionRepository.delete(SUBSCRIPTION);
+        assertThat(subscriptionRepository.findAll(PageRequest.of(0, 2))).hasSize(0);
     }
 }

@@ -33,7 +33,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @Import(RedisTestConfiguration.class)
 @SpringBootTest
-@TestPropertySource(properties = {"app.message-transport=http"})
+@TestPropertySource(properties = {"app.enable-kafla=false"})
 public class MessageHandlerTest {
     private static final String LF = "\n";
 
