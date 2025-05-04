@@ -1,44 +1,50 @@
 package backend.academy.scrapper.client.bot;
 
 import backend.academy.scrapper.client.util.ClientUtils;
-import backend.academy.scrapper.config.ScrapperConfigProperties;
+import backend.academy.scrapper.config.resilience.ResilienceConfig;
+import backend.academy.scrapper.config.scrapper.ScrapperConfigProperties;
+import backend.academy.scrapper.dto.ApiErrorResponse;
 import backend.academy.scrapper.dto.LinkUpdate;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
 
 @Slf4j
 @Component
 public class BotHttpClient implements BotClient {
     private final WebClient webClient;
     private final ScrapperConfigProperties config;
+    private final ResilienceConfig.ResilienceFeatures resilienceFeatures;
 
-    public BotHttpClient(WebClient.Builder webClientBuilder, ScrapperConfigProperties config) {
+    public BotHttpClient(
+            WebClient.Builder webClientBuilder,
+            ScrapperConfigProperties config,
+            ResilienceConfig.ResilienceFeatures resilienceFeatures) {
         this.config = config;
         webClient = webClientBuilder
                 .baseUrl(config.botUrl())
                 .filter(logRequest())
-                .filter(ExchangeFilterFunction.ofResponseProcessor(this::renderApiErrorResponse))
                 .filter(logResponse())
                 .build();
+        this.resilienceFeatures = resilienceFeatures;
     }
 
     @Override
     public void sendUpdate(LinkUpdate update) {
-        webClient
-                .post()
-                .uri(config.updatesPath())
-                .bodyValue(update)
-                .retrieve()
-                .bodyToMono(String.class)
+        ClientUtils.applyResilienceFeatures(
+                        webClient
+                                .post()
+                                .uri(config.updatesPath())
+                                .bodyValue(update)
+                                .retrieve()
+                                .onStatus(
+                                        HttpStatusCode::isError, response -> response.bodyToMono(ApiErrorResponse.class)
+                                                .flatMap(ClientUtils::renderError))
+                                .bodyToMono(String.class),
+                        resilienceFeatures)
                 .block();
-    }
-
-    private Mono<ClientResponse> renderApiErrorResponse(ClientResponse clientResponse) {
-        return ClientUtils.renderApiErrorResponse(clientResponse, log);
     }
 
     private ExchangeFilterFunction logRequest() {

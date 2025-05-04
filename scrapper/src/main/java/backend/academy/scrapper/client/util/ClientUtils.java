@@ -1,9 +1,14 @@
 package backend.academy.scrapper.client.util;
 
+import backend.academy.scrapper.config.resilience.ResilienceConfig;
 import backend.academy.scrapper.dto.ApiErrorResponse;
+import backend.academy.scrapper.exception.RetryableException;
+import io.github.resilience4j.reactor.circuitbreaker.operator.CircuitBreakerOperator;
+import io.github.resilience4j.reactor.retry.RetryOperator;
+import io.github.resilience4j.reactor.timelimiter.TimeLimiterOperator;
 import lombok.experimental.UtilityClass;
 import org.slf4j.Logger;
-import org.springframework.web.reactive.function.client.ClientResponse;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
@@ -36,15 +41,18 @@ public class ClientUtils {
         });
     }
 
-    public static Mono<ClientResponse> renderApiErrorResponse(ClientResponse clientResponse, Logger logger) {
-        if (clientResponse.statusCode().isError()) {
-            logger.atError()
-                    .addKeyValue("api_error_response", clientResponse.statusCode())
-                    .log();
-            return clientResponse
-                    .bodyToMono(ApiErrorResponse.class)
-                    .flatMap(ignored -> Mono.error(new ResponseStatusException(clientResponse.statusCode())));
+    public static <T> Mono<T> renderError(ApiErrorResponse error) {
+        int code = error.code();
+        if (code == 408 || code == 429 || code == 502 || code == 503 || code == 504) {
+            return Mono.error(new RetryableException(HttpStatus.valueOf(code)));
         }
-        return Mono.just(clientResponse);
+        return Mono.error(new ResponseStatusException(HttpStatus.valueOf(code)));
+    }
+
+    public static <T> Mono<T> applyResilienceFeatures(
+            Mono<T> mono, ResilienceConfig.ResilienceFeatures resilienceFeatures) {
+        return mono.transformDeferred(CircuitBreakerOperator.of(resilienceFeatures.circuitBreaker()))
+                .transformDeferred(RetryOperator.of(resilienceFeatures.retry()))
+                .transformDeferred(TimeLimiterOperator.of(resilienceFeatures.timeLimiter()));
     }
 }

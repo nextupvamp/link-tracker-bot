@@ -38,6 +38,8 @@ public class ListCommand implements BotCommand {
                 return NOT_AVAILABLE;
             }
             return String.format(ERROR_RESPONSE_FORMAT, "get list of links");
+        } catch (Exception e) {
+            return NOT_AVAILABLE;
         }
     }
 

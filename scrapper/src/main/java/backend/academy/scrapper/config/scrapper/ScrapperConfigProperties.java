@@ -1,4 +1,4 @@
-package backend.academy.scrapper.config;
+package backend.academy.scrapper.config.scrapper;
 
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Positive;

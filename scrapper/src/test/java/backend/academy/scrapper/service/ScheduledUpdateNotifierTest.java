@@ -8,7 +8,7 @@ import static org.mockito.Mockito.doReturn;
 
 import backend.academy.scrapper.client.update.GitHubCheckUpdateClient;
 import backend.academy.scrapper.client.update.StackOverflowCheckUpdateClient;
-import backend.academy.scrapper.config.ScrapperConfigProperties;
+import backend.academy.scrapper.config.scrapper.ScrapperConfigProperties;
 import backend.academy.scrapper.dto.LightChatData;
 import backend.academy.scrapper.dto.Update;
 import backend.academy.scrapper.model.Chat;

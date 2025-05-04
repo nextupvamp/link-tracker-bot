@@ -11,11 +11,30 @@ app:
   page-size: 50
   preview-size: 200
   access-type: jpa
-  enable-kafka: true
+  enable-kafka: false
   kafka:
     topic: update
     partitions: 3
     replication-factor: 1
+  resilience:
+    circuit-breaker-failure-rate-threshold: 100
+    circuit-breaker-minimum-number-of-calls: 10
+    circuit-breaker-permitted-calls-in-half-open-state: 2
+    circuit-breaker-sliding-window-size: 5
+    circuit-breaker-wait-duration-in-open-state: 1
+    circuit-breaker-slow-call-duration-threshold: 5
+    retry-max-attempts: 3
+    retry-wait-duration: 100
+    time-limiter-timeout-duration: 10
+
+resilience4j:
+  ratelimiter:
+    instances:
+      default:
+        limitForPeriod: 5
+        limitRefreshPeriod: 1s
+        timeoutDuration: 0
+        registerHealthIndicator: true
 
 spring:
   kafka:

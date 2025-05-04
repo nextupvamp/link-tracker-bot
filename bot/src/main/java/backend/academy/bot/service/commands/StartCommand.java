@@ -19,12 +19,10 @@ public class StartCommand implements BotCommand {
         try {
             newChat = scrapperClient.getChatData(chatId);
         } catch (ResponseStatusException e) { // if 404
-            try {
-                scrapperClient.addChat(chatId);
-                return "Hello! You can see the bot's commands by entering /help";
-            } catch (Exception ex) {
-                return NOT_AVAILABLE;
-            }
+            scrapperClient.addChat(chatId);
+            return "Hello! You can see the bot's commands by entering /help";
+        } catch (Exception e) {
+            return NOT_AVAILABLE;
         }
 
         if (newChat.state() != ChatState.DEFAULT) {

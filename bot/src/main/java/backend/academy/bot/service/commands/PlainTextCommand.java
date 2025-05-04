@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.Set;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.springframework.web.server.ResponseStatusException;
 
 @AllArgsConstructor
 @Component
@@ -45,7 +44,7 @@ public class PlainTextCommand implements BotCommand {
 
                 try {
                     scrapperClient.updateChat(chatData);
-                } catch (ResponseStatusException e) {
+                } catch (Exception e) {
                     yield NOT_AVAILABLE;
                 }
 

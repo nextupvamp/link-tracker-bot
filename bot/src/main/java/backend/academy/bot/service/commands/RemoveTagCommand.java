@@ -5,7 +5,6 @@ import backend.academy.bot.model.ChatData;
 import backend.academy.bot.model.ChatState;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.springframework.web.server.ResponseStatusException;
 
 @Component
 @AllArgsConstructor
@@ -39,7 +38,7 @@ public class RemoveTagCommand implements BotCommand {
         if (result) {
             try {
                 scrapperClient.updateChat(chatData);
-            } catch (ResponseStatusException e) {
+            } catch (Exception e) {
                 return NOT_AVAILABLE;
             }
             cache.evictCache(chatId);

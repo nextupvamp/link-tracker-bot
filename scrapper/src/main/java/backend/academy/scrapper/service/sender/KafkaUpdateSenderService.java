@@ -1,6 +1,6 @@
 package backend.academy.scrapper.service.sender;
 
-import backend.academy.scrapper.config.KafkaConfigProperties;
+import backend.academy.scrapper.config.kafka.KafkaConfigProperties;
 import backend.academy.scrapper.dto.LinkUpdate;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
