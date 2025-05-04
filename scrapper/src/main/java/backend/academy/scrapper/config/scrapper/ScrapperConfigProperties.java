@@ -17,6 +17,7 @@ public record ScrapperConfigProperties(
         @NotEmpty String accessType,
         @NotEmpty String githubRepoIssueFormat,
         @Positive int previewSize,
-        @NotEmpty String updatesPath) {
+        @NotEmpty String updatesPath,
+        @NotEmpty String mainTransport) {
     public record StackOverflowCredentials(@NotEmpty String key, @NotEmpty String accessToken) {}
 }

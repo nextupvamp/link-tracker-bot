@@ -18,7 +18,6 @@ import backend.academy.scrapper.model.Subscription;
 import backend.academy.scrapper.repository.subscription.SubscriptionJpaRepository;
 import backend.academy.scrapper.repository.subscription.SubscriptionRepository;
 import backend.academy.scrapper.service.scrapper.UpdateCheckersChain;
-import backend.academy.scrapper.service.scrapper.UpdateScrapperService;
 import backend.academy.scrapper.service.scrapper.UpdateScrapperServiceImpl;
 import java.util.Comparator;
 import java.util.List;
@@ -45,7 +44,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
             UpdateScrapperServiceImpl.class
         })
 @TestPropertySource(properties = "app.access-type=jpa")
-public class ScheduledUpdateNotifierTest {
+public class UpdateScrapperServiceTest {
     @MockitoBean
     private GitHubCheckUpdateClient gitHubClient;
 
@@ -59,7 +58,7 @@ public class ScheduledUpdateNotifierTest {
     private ScrapperConfigProperties config;
 
     @Autowired
-    private UpdateScrapperService scrapper;
+    private backend.academy.scrapper.service.scrapper.UpdateScrapperService scrapper;
 
     @Test
     public void testNotifyUsers() {
@@ -124,4 +123,7 @@ public class ScheduledUpdateNotifierTest {
 
         assertThat(expected).isEqualTo(updates.getLast().preview());
     }
+
+    @Test
+    public void testTransportTransition() {}
 }

@@ -31,7 +31,8 @@ public class CommonClientTest {
             null,
             "/repos/%s/issues?per_page=1",
             229,
-            "/updates");
+            "/updates",
+            "http");
 
     protected static final WireMockServer WIRE_MOCK_SERVER = new WireMockServer(8080);
 
