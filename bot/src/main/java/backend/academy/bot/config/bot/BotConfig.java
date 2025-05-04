@@ -1,4 +1,4 @@
-package backend.academy.bot;
+package backend.academy.bot.config.bot;
 
 import backend.academy.bot.service.MessageHandler;
 import com.pengrad.telegrambot.TelegramBot;
@@ -7,13 +7,12 @@ import com.pengrad.telegrambot.model.BotCommand;
 import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.request.SendMessage;
 import com.pengrad.telegrambot.request.SetMyCommands;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.reactive.function.client.WebClient;
 
 @Slf4j
-@AllArgsConstructor
 @Configuration
 public class BotConfig {
     @Bean
@@ -29,6 +28,11 @@ public class BotConfig {
         bot.execute(new SetMyCommands(getCommands(messageHandler)));
 
         return bot;
+    }
+
+    @Bean
+    public WebClient.Builder webClientBuilder() {
+        return WebClient.builder();
     }
 
     private void handleUpdate(MessageHandler messageHandler, Update update, TelegramBot bot) {

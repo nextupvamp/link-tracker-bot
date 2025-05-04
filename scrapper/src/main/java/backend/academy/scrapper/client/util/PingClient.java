@@ -1,4 +1,4 @@
-package backend.academy.scrapper.client;
+package backend.academy.scrapper.client.util;
 
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;

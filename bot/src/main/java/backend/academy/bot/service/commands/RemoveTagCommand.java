@@ -2,8 +2,8 @@ package backend.academy.bot.service.commands;
 
 import backend.academy.bot.client.ScrapperClient;
 import backend.academy.bot.model.ChatData;
+import backend.academy.bot.model.ChatState;
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -11,18 +11,16 @@ import org.springframework.web.server.ResponseStatusException;
 @AllArgsConstructor
 public class RemoveTagCommand implements BotCommand {
     private final ScrapperClient scrapperClient;
+    private final CommandCommons commons;
+    private final CommandCachingManager cache;
 
     @Override
     public String execute(long chatId, String[] tokens) {
         ChatData chatData;
         try {
-            chatData = scrapperClient.getChatData(chatId);
-        } catch (ResponseStatusException e) {
-            if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
-                return NOT_STARTED;
-            } else {
-                return NOT_AVAILABLE;
-            }
+            chatData = commons.getChatDataWithState(chatId, scrapperClient, ChatState.DEFAULT);
+        } catch (Exception e) {
+            return e.getMessage();
         }
 
         if (tokens.length != 3) {
@@ -44,6 +42,7 @@ public class RemoveTagCommand implements BotCommand {
             } catch (ResponseStatusException e) {
                 return NOT_AVAILABLE;
             }
+            cache.evictCache(chatId);
             return "Tag has been removed successfully.";
         }
 

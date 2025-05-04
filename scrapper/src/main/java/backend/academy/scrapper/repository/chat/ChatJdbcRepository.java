@@ -5,7 +5,9 @@ import backend.academy.scrapper.model.ChatState;
 import backend.academy.scrapper.model.Link;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
@@ -21,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ChatJdbcRepository implements ChatRepository {
     private final ChatRowMapper CHAT_ROW_MAPPER = new ChatRowMapper();
     private final LinkRowMapper LINK_ROW_MAPPER = new LinkRowMapper();
+    private final FilterRowMapper FILTER_ROW_MAPPER = new FilterRowMapper();
 
     private final JdbcClient jdbcClient;
 
@@ -101,18 +104,19 @@ public class ChatJdbcRepository implements ChatRepository {
                         .map(it -> (String) it)
                         .collect(Collectors.toSet());
 
-        var filters =
-                jdbcClient
-                        .sql("select filter from link_filters where link = ?")
-                        .param(link.id())
-                        .query()
-                        .singleColumn()
-                        .stream()
-                        .map(it -> (String) it)
-                        .collect(Collectors.toSet());
+        var filters = jdbcClient
+                .sql("select * from link_filters where link = ?")
+                .param(link.id())
+                .query(FILTER_ROW_MAPPER)
+                .list();
+
+        Map<String, String> mappedFilters = new HashMap<>();
+        for (var filter : filters) {
+            mappedFilters.putAll(filter);
+        }
 
         link.tags(tags);
-        link.filters(filters);
+        link.filters(mappedFilters);
     }
 
     private long saveLink(Chat chat, Link link) {
@@ -146,11 +150,12 @@ public class ChatJdbcRepository implements ChatRepository {
                     .update();
         }
 
-        for (var filter : link.filters()) {
+        for (var filter : link.filters().entrySet()) {
             jdbcClient
-                    .sql("insert into link_filters (link, filter) values (?, ?)")
+                    .sql("insert into link_filters (link, key, value) values (?, ?, ?)")
                     .param(linkId)
-                    .param(filter)
+                    .param(filter.getKey())
+                    .param(filter.getValue())
                     .update();
         }
 
@@ -189,6 +194,15 @@ public class ChatJdbcRepository implements ChatRepository {
             chat.id(rs.getLong("id"));
             chat.state(ChatState.valueOf(rs.getString("state")));
             return chat;
+        }
+    }
+
+    public static class FilterRowMapper implements RowMapper<Map<String, String>> {
+        @Override
+        public Map<String, String> mapRow(ResultSet rs, int rowNum) throws SQLException {
+            HashMap<String, String> map = new HashMap<>();
+            map.put(rs.getString("key"), rs.getString("value"));
+            return map;
         }
     }
 }

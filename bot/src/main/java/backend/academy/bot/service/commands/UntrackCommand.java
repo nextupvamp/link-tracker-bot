@@ -1,7 +1,6 @@
 package backend.academy.bot.service.commands;
 
 import backend.academy.bot.client.ScrapperClient;
-import backend.academy.bot.model.ChatData;
 import backend.academy.bot.model.ChatState;
 import backend.academy.bot.model.Link;
 import lombok.AllArgsConstructor;
@@ -13,22 +12,15 @@ import org.springframework.web.server.ResponseStatusException;
 @Component
 public class UntrackCommand implements BotCommand {
     private final ScrapperClient scrapperClient;
+    private final CommandCommons commons;
+    private final CommandCachingManager cache;
 
     @Override
     public String execute(long chatId, String[] tokens) {
-        ChatData chatData;
         try {
-            chatData = scrapperClient.getChatData(chatId);
-        } catch (ResponseStatusException e) {
-            if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
-                return NOT_STARTED;
-            } else {
-                return NOT_AVAILABLE;
-            }
-        }
-
-        if (chatData.state() != ChatState.DEFAULT) {
-            return NOT_APPLICABLE;
+            commons.getChatDataWithState(chatId, scrapperClient, ChatState.DEFAULT);
+        } catch (Exception e) {
+            return e.getMessage();
         }
 
         if (tokens.length != 2) {
@@ -37,6 +29,7 @@ public class UntrackCommand implements BotCommand {
 
         try {
             scrapperClient.removeLink(chatId, new Link(tokens[1]));
+            cache.evictCache(chatId);
             return "Link " + tokens[1] + " has been removed.";
         } catch (ResponseStatusException e) {
             var httpStatusCode = e.getStatusCode();

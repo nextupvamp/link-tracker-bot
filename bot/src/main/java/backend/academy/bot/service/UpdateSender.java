@@ -18,17 +18,28 @@ public class UpdateSender {
 
     public void sendUpdates(LinkUpdate linkUpdate) {
         var chats = linkUpdate.chats();
-        for (var chat : chats.entrySet()) {
-            bot.execute(new SendMessage(chat.getKey(), getMessage(linkUpdate, chat.getValue())));
+        if (chats != null) {
+            for (var chat : chats) {
+                String userFilter = null;
+                if (chat.filters() != null) {
+                    userFilter = chat.filters().get("user");
+                }
+
+                if (userFilter == null || !userFilter.equals(linkUpdate.username())) {
+                    bot.execute(new SendMessage(chat.id(), getMessage(linkUpdate, chat.tags())));
+                }
+            }
         }
     }
 
     private String getMessage(LinkUpdate linkUpdate, Set<String> tags) {
         StringBuilder message = new StringBuilder();
 
-        message.append("Tags: ");
-        tags.forEach(tag -> message.append(tag).append(' '));
-        message.append('\n');
+        if (tags != null && !tags.isEmpty()) {
+            message.append("Tags: ");
+            tags.forEach(tag -> message.append(tag).append(' '));
+            message.append('\n');
+        }
 
         message.append("New update on ").append(linkUpdate.url()).append(" :\n");
         message.append("From ")
@@ -44,7 +55,7 @@ public class UpdateSender {
 
     private String epochToString(long epochSecond) {
         Date date = new Date(epochSecond * 1000L);
-        DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+        DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         format.setTimeZone(TimeZone.getTimeZone("Etc/UTC"));
         return format.format(date);
     }

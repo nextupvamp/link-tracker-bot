@@ -4,33 +4,24 @@ import backend.academy.bot.client.ScrapperClient;
 import backend.academy.bot.model.ChatData;
 import backend.academy.bot.model.ChatState;
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-import org.springframework.web.server.ResponseStatusException;
 
 @AllArgsConstructor
 @Component
 public class CancelCommand implements BotCommand {
     private final ScrapperClient scrapperClient;
+    private final CommandCommons commons;
 
     @Override
     public String execute(long chatId, String[] tokens) {
         ChatData chatData;
         try {
-            chatData = scrapperClient.getChatData(chatId);
-        } catch (ResponseStatusException e) {
-            if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
-                return NOT_STARTED;
-            } else {
-                return NOT_AVAILABLE;
-            }
+            chatData = commons.getChatDataWithoutState(chatId, scrapperClient, ChatState.DEFAULT);
+        } catch (Exception e) {
+            return e.getMessage();
         }
 
-        if (chatData.state() == ChatState.DEFAULT) {
-            return NOT_APPLICABLE;
-        }
-
-        return BotCommand.finishAdding(chatId, chatData, scrapperClient);
+        return commons.finishAdding(chatId, chatData, scrapperClient);
     }
 
     @Override

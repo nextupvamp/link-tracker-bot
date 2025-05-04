@@ -1,6 +1,7 @@
-package backend.academy.scrapper.client;
+package backend.academy.scrapper.client.update;
 
-import backend.academy.scrapper.ScrapperConfigProperties;
+import backend.academy.scrapper.client.util.ClientUtils;
+import backend.academy.scrapper.config.ScrapperConfigProperties;
 import backend.academy.scrapper.dto.ApiErrorResponse;
 import backend.academy.scrapper.dto.Update;
 import backend.academy.scrapper.model.Subscription;

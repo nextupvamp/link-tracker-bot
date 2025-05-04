@@ -7,7 +7,8 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import backend.academy.scrapper.ScrapperConfigProperties;
+import backend.academy.scrapper.client.update.StackOverflowCheckUpdateClient;
+import backend.academy.scrapper.config.ScrapperConfigProperties;
 import backend.academy.scrapper.model.Site;
 import backend.academy.scrapper.model.Subscription;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;

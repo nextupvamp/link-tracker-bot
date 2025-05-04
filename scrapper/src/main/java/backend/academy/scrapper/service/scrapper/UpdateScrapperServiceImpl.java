@@ -1,15 +1,13 @@
 package backend.academy.scrapper.service.scrapper;
 
-import backend.academy.scrapper.ScrapperConfigProperties;
+import backend.academy.scrapper.config.ScrapperConfigProperties;
+import backend.academy.scrapper.dto.LightChatData;
 import backend.academy.scrapper.dto.LinkUpdate;
 import backend.academy.scrapper.model.Link;
 import backend.academy.scrapper.model.Subscription;
 import backend.academy.scrapper.repository.subscription.SubscriptionRepository;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -49,7 +47,7 @@ public class UpdateScrapperServiceImpl implements UpdateScrapperService {
                             .topic(update.topic())
                             .url(update.subscription().url())
                             .username(update.username())
-                            .chats(getChatsMap(subscription))
+                            .chats(getChatList(subscription))
                             .build());
                 }
             });
@@ -65,15 +63,15 @@ public class UpdateScrapperServiceImpl implements UpdateScrapperService {
         return source;
     }
 
-    private Map<Long, Set<String>> getChatsMap(Subscription subscription) {
-        var map = new HashMap<Long, Set<String>>();
-
+    private List<LightChatData> getChatList(Subscription subscription) {
+        List<LightChatData> list = new ArrayList<>();
         String url = subscription.url();
 
         for (var chat : subscription.subscribers()) {
-            map.put(chat.id(), chat.findLink(url).map(Link::tags).orElse(null));
+            var chatLink = chat.findLink(url).orElse(new Link());
+            list.add(new LightChatData(chat.id(), chatLink.tags(), chatLink.filters()));
         }
 
-        return map;
+        return list;
     }
 }

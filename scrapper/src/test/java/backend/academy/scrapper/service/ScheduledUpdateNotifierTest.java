@@ -6,9 +6,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 
-import backend.academy.scrapper.ScrapperConfigProperties;
-import backend.academy.scrapper.client.GitHubCheckUpdateClient;
-import backend.academy.scrapper.client.StackOverflowCheckUpdateClient;
+import backend.academy.scrapper.client.update.GitHubCheckUpdateClient;
+import backend.academy.scrapper.client.update.StackOverflowCheckUpdateClient;
+import backend.academy.scrapper.config.ScrapperConfigProperties;
+import backend.academy.scrapper.dto.LightChatData;
 import backend.academy.scrapper.dto.Update;
 import backend.academy.scrapper.model.Chat;
 import backend.academy.scrapper.model.ChatState;
@@ -23,6 +24,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -87,8 +89,16 @@ public class ScheduledUpdateNotifierTest {
         updates.sort(Comparator.comparingInt(it -> it.chats().size()));
 
         assertAll(
-                () -> assertEquals(Set.of(1L, 2L), updates.getLast().chats().keySet()),
-                () -> assertEquals(Set.of(3L), updates.getFirst().chats().keySet()));
+                () -> assertEquals(
+                        Set.of(1L, 2L),
+                        updates.getLast().chats().stream()
+                                .map(LightChatData::id)
+                                .collect(Collectors.toSet())),
+                () -> assertEquals(
+                        Set.of(3L),
+                        updates.getFirst().chats().stream()
+                                .map(LightChatData::id)
+                                .collect(Collectors.toSet())));
     }
 
     @ParameterizedTest

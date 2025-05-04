@@ -3,16 +3,26 @@ app:
   stackoverflow:
     key: ${SO_TOKEN_KEY}
     access-token: ${SO_ACCESS_TOKEN}
-  bot-url: "http://localhost:8080"
-  github-api-url: "https://api.github.com"
-  github-repo-issue-format: "repos/%s/issues?per_page=1"
-  stack-exchange-api-url: "https://api.stackexchange.com/2.2"
-  updates-path:  "/updates"
+  bot-url: http://localhost:8080
+  github-api-url: https://api.github.com
+  github-repo-issue-format: repos/%s/issues?per_page=1
+  stack-exchange-api-url: https://api.stackexchange.com/2.2
+  updates-path: /updates
   page-size: 50
   preview-size: 200
   access-type: jpa
+  enable-kafka: true
+  kafka:
+    topic: update
+    partitions: 3
+    replication-factor: 1
 
 spring:
+  kafka:
+    producer:
+      properties.spring:
+          json.add.type.headers: false
+      bootstrap-servers: localhost:19092, localhost:29092
   datasource:
     url: jdbc:postgresql://localhost:5432/postgres
     username: postgres

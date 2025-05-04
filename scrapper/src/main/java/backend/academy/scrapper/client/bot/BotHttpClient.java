@@ -1,6 +1,7 @@
-package backend.academy.scrapper.client;
+package backend.academy.scrapper.client.bot;
 
-import backend.academy.scrapper.ScrapperConfigProperties;
+import backend.academy.scrapper.client.util.ClientUtils;
+import backend.academy.scrapper.config.ScrapperConfigProperties;
 import backend.academy.scrapper.dto.LinkUpdate;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -11,7 +12,7 @@ import reactor.core.publisher.Mono;
 
 @Slf4j
 @Component
-public class BotHttpClient {
+public class BotHttpClient implements BotClient {
     private final WebClient webClient;
     private final ScrapperConfigProperties config;
 
@@ -25,6 +26,7 @@ public class BotHttpClient {
                 .build();
     }
 
+    @Override
     public void sendUpdate(LinkUpdate update) {
         webClient
                 .post()

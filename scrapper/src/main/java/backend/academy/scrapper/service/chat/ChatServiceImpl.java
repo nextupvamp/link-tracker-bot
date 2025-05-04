@@ -1,6 +1,6 @@
 package backend.academy.scrapper.service.chat;
 
-import backend.academy.scrapper.client.PingClient;
+import backend.academy.scrapper.client.util.PingClient;
 import backend.academy.scrapper.dto.AddLinkRequest;
 import backend.academy.scrapper.dto.ChatData;
 import backend.academy.scrapper.dto.LinkData;

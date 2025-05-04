@@ -7,10 +7,11 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import backend.academy.scrapper.ScrapperConfigProperties;
+import backend.academy.scrapper.client.bot.BotHttpClient;
+import backend.academy.scrapper.config.ScrapperConfigProperties;
 import backend.academy.scrapper.dto.LinkUpdate;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import java.util.HashMap;
+import java.util.ArrayList;
 import org.junit.Rule;
 import org.junit.Test;
 import org.springframework.http.HttpStatus;
@@ -38,7 +39,7 @@ public class BotHttpClientTest {
 
         ResponseStatusException exception = assertThrows(
                 ResponseStatusException.class,
-                () -> botHttpClient.sendUpdate(new LinkUpdate("", "", "", 0, "", new HashMap<>())));
+                () -> botHttpClient.sendUpdate(new LinkUpdate("", "", "", 0, "", new ArrayList<>())));
 
         assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
     }

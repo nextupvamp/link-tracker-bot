@@ -11,7 +11,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import backend.academy.scrapper.client.PingClient;
+import backend.academy.scrapper.client.util.PingClient;
 import backend.academy.scrapper.dto.AddLinkRequest;
 import backend.academy.scrapper.model.Chat;
 import backend.academy.scrapper.model.ChatState;
@@ -21,6 +21,7 @@ import backend.academy.scrapper.model.Subscription;
 import backend.academy.scrapper.repository.chat.ChatRepository;
 import backend.academy.scrapper.repository.subscription.SubscriptionRepository;
 import backend.academy.scrapper.service.chat.ChatServiceImpl;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
@@ -47,7 +48,7 @@ public class ChatServiceTest {
 
     @Test
     public void testAddLink() {
-        var link = new AddLinkRequest("https://github.com/oleg/tee", Set.of("tag"), Set.of("fil:ter"));
+        var link = new AddLinkRequest("https://github.com/oleg/tee", Set.of("tag"), Map.of("fil", "ter"));
         var chat = new Chat(0L, ChatState.DEFAULT);
         doReturn(Optional.of(chat)).when(chatRepo).findById(anyLong());
         doReturn(true).when(pingClient).ping(anyString());
@@ -80,7 +81,7 @@ public class ChatServiceTest {
     @ParameterizedTest
     @ValueSource(strings = {"url, https://githab.com/oleg/tee, https://stackoverflow/questons/1234"})
     public void testIncorrectLinkValidation(String url) {
-        var link = new AddLinkRequest(url, Set.of("tag"), Set.of("fil:ter"));
+        var link = new AddLinkRequest(url, Set.of("tag"), Map.of("fil", "ter"));
         doReturn(Optional.of(new Chat(0L, ChatState.DEFAULT))).when(chatRepo).findById(anyLong());
         assertThrows(IllegalArgumentException.class, () -> chatService.addLink(0L, link));
     }
@@ -93,7 +94,7 @@ public class ChatServiceTest {
                 "https://stackoverflow.com/questions/12345/something"
             })
     public void testCorrectLinkValidation(String url) {
-        var link = new AddLinkRequest(url, Set.of("tag"), Set.of("fil:ter"));
+        var link = new AddLinkRequest(url, Set.of("tag"), Map.of("fil", "ter"));
         var chat = new Chat(0L, ChatState.DEFAULT);
         doReturn(Optional.of(chat)).when(chatRepo).findById(anyLong());
         doReturn(true).when(pingClient).ping(anyString());
