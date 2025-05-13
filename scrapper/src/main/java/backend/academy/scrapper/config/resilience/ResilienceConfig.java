@@ -16,6 +16,10 @@ import org.springframework.stereotype.Component;
 @Configuration
 @AllArgsConstructor
 public class ResilienceConfig {
+    public static final String RETRY_NAME = "default";
+    public static final String CIRCUIT_BREAKER_NAME = "default";
+    public static final String RATE_LIMITER_NAME = "default";
+
     private ResilienceConfigProperties config;
 
     @Bean
@@ -26,7 +30,7 @@ public class ResilienceConfig {
                 .waitDuration(Duration.ofMillis(config.retryWaitDuration()))
                 .build();
 
-        return Retry.of("default", retryConfig);
+        return Retry.of(RETRY_NAME, retryConfig);
     }
 
     @Bean
@@ -41,7 +45,7 @@ public class ResilienceConfig {
                 .slidingWindowType(CircuitBreakerConfig.SlidingWindowType.TIME_BASED)
                 .build();
 
-        return CircuitBreaker.of("default", circuitBreakerConfig);
+        return CircuitBreaker.of(CIRCUIT_BREAKER_NAME, circuitBreakerConfig);
     }
 
     @Bean

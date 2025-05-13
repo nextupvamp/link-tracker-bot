@@ -1,5 +1,6 @@
 package backend.academy.bot.controller;
 
+import backend.academy.bot.config.resilience.ResilienceConfig;
 import backend.academy.bot.dto.LinkUpdate;
 import backend.academy.bot.service.UpdateSender;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,7 +23,7 @@ public class UpdateController {
 
     @PostMapping("updates")
     @SneakyThrows
-    @RateLimiter(name = "default")
+    @RateLimiter(name = ResilienceConfig.RATE_LIMITER_NAME)
     public void postUpdates(@RequestBody LinkUpdate linkUpdate) {
         log.atInfo()
                 .addKeyValue("request", mapper.writeValueAsString(linkUpdate))

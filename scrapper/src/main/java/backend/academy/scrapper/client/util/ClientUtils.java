@@ -6,6 +6,7 @@ import backend.academy.scrapper.exception.RetryableException;
 import io.github.resilience4j.reactor.circuitbreaker.operator.CircuitBreakerOperator;
 import io.github.resilience4j.reactor.retry.RetryOperator;
 import io.github.resilience4j.reactor.timelimiter.TimeLimiterOperator;
+import java.util.Set;
 import lombok.experimental.UtilityClass;
 import org.slf4j.Logger;
 import org.springframework.http.HttpStatus;
@@ -15,6 +16,8 @@ import reactor.core.publisher.Mono;
 
 @UtilityClass
 public class ClientUtils {
+    private static final Set<Integer> RETRYABLE_CODES = Set.of(408, 429, 502, 503, 504);
+
     public static ExchangeFilterFunction logRequest(Logger logger) {
         return ExchangeFilterFunction.ofRequestProcessor(clientRequest -> {
             var log = logger.atDebug()
@@ -43,7 +46,7 @@ public class ClientUtils {
 
     public static <T> Mono<T> renderError(ApiErrorResponse error) {
         int code = error.code();
-        if (code == 408 || code == 429 || code == 502 || code == 503 || code == 504) {
+        if (RETRYABLE_CODES.contains(code)) {
             return Mono.error(new RetryableException(HttpStatus.valueOf(code)));
         }
         return Mono.error(new ResponseStatusException(HttpStatus.valueOf(code)));

@@ -10,6 +10,7 @@ import backend.academy.bot.model.Link;
 import io.github.resilience4j.reactor.circuitbreaker.operator.CircuitBreakerOperator;
 import io.github.resilience4j.reactor.retry.RetryOperator;
 import io.github.resilience4j.reactor.timelimiter.TimeLimiterOperator;
+import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -23,6 +24,8 @@ import reactor.core.publisher.Mono;
 @Slf4j
 @Component
 public class ScrapperHttpClient implements ScrapperClient {
+    private static final Set<Integer> RETRYABLE_CODES = Set.of(408, 429, 502, 503, 504);
+
     private final ResilienceConfig.ResilienceFeatures resilienceFeatures;
     private final WebClient webClient;
     private final String tgChatPath;
@@ -125,7 +128,7 @@ public class ScrapperHttpClient implements ScrapperClient {
 
     private <T> Mono<T> renderError(ApiErrorResponse error) {
         int code = error.code();
-        if (code == 408 || code == 429 || code == 502 || code == 503 || code == 504) {
+        if (RETRYABLE_CODES.contains(code)) {
             return Mono.error(new RetryableException(HttpStatus.valueOf(code)));
         }
         return Mono.error(new ResponseStatusException(HttpStatus.valueOf(code)));
