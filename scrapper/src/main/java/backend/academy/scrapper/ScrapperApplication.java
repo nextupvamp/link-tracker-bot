@@ -1,7 +1,8 @@
 package backend.academy.scrapper;
 
-import backend.academy.scrapper.config.KafkaConfigProperties;
-import backend.academy.scrapper.config.ScrapperConfigProperties;
+import backend.academy.scrapper.config.kafka.KafkaConfigProperties;
+import backend.academy.scrapper.config.resilience.ResilienceConfigProperties;
+import backend.academy.scrapper.config.scrapper.ScrapperConfigProperties;
 import java.sql.SQLException;
 import javax.sql.DataSource;
 import liquibase.Contexts;
@@ -19,7 +20,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 
 @SpringBootApplication
-@EnableConfigurationProperties({ScrapperConfigProperties.class, KafkaConfigProperties.class})
+@EnableConfigurationProperties({
+    ScrapperConfigProperties.class,
+    KafkaConfigProperties.class,
+    ResilienceConfigProperties.class
+})
 @Slf4j
 public class ScrapperApplication {
     public static void main(String[] args) {

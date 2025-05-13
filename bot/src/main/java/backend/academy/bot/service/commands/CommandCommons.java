@@ -26,6 +26,8 @@ public class CommandCommons {
                 return BotCommand.NOT_AVAILABLE;
             }
             return String.format(BotCommand.ERROR_RESPONSE_FORMAT, "add new link (unsupported or invalid link)");
+        } catch (Exception e) {
+            return BotCommand.NOT_AVAILABLE;
         }
     }
 
@@ -62,6 +64,8 @@ public class CommandCommons {
             } else {
                 throw new Exception(BotCommand.NOT_AVAILABLE);
             }
+        } catch (Exception e) {
+            throw new Exception(BotCommand.NOT_AVAILABLE);
         }
 
         return chatData;

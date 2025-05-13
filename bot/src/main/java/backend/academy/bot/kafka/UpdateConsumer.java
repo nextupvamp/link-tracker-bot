@@ -1,5 +1,6 @@
 package backend.academy.bot.kafka;
 
+import backend.academy.bot.config.kafka.KafkaConfig;
 import backend.academy.bot.dto.LinkUpdate;
 import backend.academy.bot.service.UpdateSender;
 import lombok.AllArgsConstructor;
@@ -28,7 +29,7 @@ public class UpdateConsumer {
                             delayExpression = "${app.kafka.retry.delay}",
                             multiplierExpression = "${app.kafka.retry.multiplier}"),
             topicSuffixingStrategy = TopicSuffixingStrategy.SUFFIX_WITH_INDEX_VALUE,
-            kafkaTemplate = "kafkaTemplate")
+            kafkaTemplate = KafkaConfig.KAFKA_TEMPLATE_NAME)
     public void consume(ConsumerRecord<String, LinkUpdate> record, Acknowledgment ack) {
         log.atInfo().addKeyValue(record.topic(), record.value()).log();
 

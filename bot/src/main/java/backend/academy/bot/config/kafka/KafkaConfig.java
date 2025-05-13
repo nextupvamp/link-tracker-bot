@@ -31,6 +31,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @AllArgsConstructor
 @EnableScheduling
 public class KafkaConfig {
+    public static final String KAFKA_TEMPLATE_NAME = "kafkaTemplate";
+
     private final KafkaProperties kafkaProperties;
     private final KafkaConfigProperties configProperties;
 
@@ -62,7 +64,7 @@ public class KafkaConfig {
         return factory;
     }
 
-    @Bean
+    @Bean(name = KAFKA_TEMPLATE_NAME)
     public KafkaTemplate<String, byte[]> kafkaTemplate() {
         var properties = kafkaProperties.buildProducerProperties();
 

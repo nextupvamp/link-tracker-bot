@@ -38,7 +38,7 @@ public class UpdateConsumerTest {
     @BeforeEach
     public void warmup() {
         /*
-           For some reason one of the tests will fall if there's no such
+           For some reason one of the tests will randomly fall if there's no such
            warmup
         */
         defaultKafkaTemplate.send(TOPIC, 0, null, null);

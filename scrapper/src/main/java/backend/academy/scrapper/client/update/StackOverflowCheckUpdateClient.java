@@ -1,7 +1,8 @@
 package backend.academy.scrapper.client.update;
 
 import backend.academy.scrapper.client.util.ClientUtils;
-import backend.academy.scrapper.config.ScrapperConfigProperties;
+import backend.academy.scrapper.config.resilience.ResilienceConfig;
+import backend.academy.scrapper.config.scrapper.ScrapperConfigProperties;
 import backend.academy.scrapper.dto.ApiErrorResponse;
 import backend.academy.scrapper.dto.Update;
 import backend.academy.scrapper.model.Subscription;
@@ -11,14 +12,10 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.server.ResponseStatusException;
-import reactor.core.publisher.Mono;
 
 @Slf4j
 @Component
@@ -27,14 +24,18 @@ public class StackOverflowCheckUpdateClient implements CheckUpdateClient {
             Pattern.compile("https://stackoverflow\\.com/questions/(?<id>[0-9]+)/.*");
 
     private final WebClient webClient;
+    private final ResilienceConfig.ResilienceFeatures resilienceFeatures;
 
-    public StackOverflowCheckUpdateClient(WebClient.Builder webClientBuilder, ScrapperConfigProperties config) {
+    public StackOverflowCheckUpdateClient(
+            WebClient.Builder webClientBuilder,
+            ScrapperConfigProperties config,
+            ResilienceConfig.ResilienceFeatures resilienceFeatures) {
         webClient = webClientBuilder
                 .baseUrl(config.stackExchangeApiUrl())
                 .filter(logRequest())
-                .filter(ExchangeFilterFunction.ofResponseProcessor(this::renderApiErrorResponse))
                 .filter(logResponse())
                 .build();
+        this.resilienceFeatures = resilienceFeatures;
     }
 
     @Override
@@ -67,24 +68,28 @@ public class StackOverflowCheckUpdateClient implements CheckUpdateClient {
     }
 
     private QuestionResponse getQuestion(String url) {
-        return webClient
-                .get()
-                .uri(getQuestionApiPath(url))
-                .retrieve()
-                .onStatus(HttpStatusCode::isError, resp -> resp.bodyToMono(ApiErrorResponse.class)
-                        .flatMap(error -> Mono.error(new ResponseStatusException(HttpStatus.valueOf(error.code())))))
-                .bodyToMono(QuestionResponse.class)
+        return ClientUtils.applyResilienceFeatures(
+                        webClient
+                                .get()
+                                .uri(getQuestionApiPath(url))
+                                .retrieve()
+                                .onStatus(HttpStatusCode::isError, resp -> resp.bodyToMono(ApiErrorResponse.class)
+                                        .flatMap(ClientUtils::renderError))
+                                .bodyToMono(QuestionResponse.class),
+                        resilienceFeatures)
                 .block();
     }
 
     private AnswerResponse getLastAnswer(String url) {
-        return webClient
-                .get()
-                .uri(getLastAnswerApiPath(url))
-                .retrieve()
-                .onStatus(HttpStatusCode::isError, resp -> resp.bodyToMono(ApiErrorResponse.class)
-                        .flatMap(error -> Mono.error(new ResponseStatusException(HttpStatus.valueOf(error.code())))))
-                .bodyToMono(AnswerResponse.class)
+        return ClientUtils.applyResilienceFeatures(
+                        webClient
+                                .get()
+                                .uri(getLastAnswerApiPath(url))
+                                .retrieve()
+                                .onStatus(HttpStatusCode::isError, resp -> resp.bodyToMono(ApiErrorResponse.class)
+                                        .flatMap(ClientUtils::renderError))
+                                .bodyToMono(AnswerResponse.class),
+                        resilienceFeatures)
                 .block();
     }
 
@@ -106,10 +111,6 @@ public class StackOverflowCheckUpdateClient implements CheckUpdateClient {
         }
 
         return questionId;
-    }
-
-    private Mono<ClientResponse> renderApiErrorResponse(ClientResponse clientResponse) {
-        return ClientUtils.renderApiErrorResponse(clientResponse, log);
     }
 
     private ExchangeFilterFunction logRequest() {

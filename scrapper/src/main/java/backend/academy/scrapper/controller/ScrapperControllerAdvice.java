@@ -2,7 +2,9 @@ package backend.academy.scrapper.controller;
 
 import backend.academy.scrapper.dto.ApiErrorResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.resilience4j.ratelimiter.RequestNotPermitted;
 import java.util.NoSuchElementException;
+import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -15,8 +17,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 @Slf4j
 @ControllerAdvice
+@AllArgsConstructor
 public class ScrapperControllerAdvice {
-    private static final ObjectMapper MAPPER = new ObjectMapper();
+    private final ObjectMapper mapper;
 
     @ExceptionHandler(NoSuchElementException.class)
     @SneakyThrows
@@ -29,7 +32,7 @@ public class ScrapperControllerAdvice {
                 .stackTrace(e.getStackTrace())
                 .build();
 
-        log.atInfo().addKeyValue("error", MAPPER.writeValueAsString(response)).log();
+        log.atInfo().addKeyValue("error", mapper.writeValueAsString(response)).log();
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
@@ -50,8 +53,24 @@ public class ScrapperControllerAdvice {
                 .stackTrace(e.getStackTrace())
                 .build();
 
-        log.atInfo().addKeyValue("error", MAPPER.writeValueAsString(response)).log();
+        log.atInfo().addKeyValue("error", mapper.writeValueAsString(response)).log();
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    @ExceptionHandler({RequestNotPermitted.class})
+    @SneakyThrows
+    public ResponseEntity<?> handleTooManyRequests(Exception e) {
+        var response = ApiErrorResponse.builder()
+                .description("Too many requests")
+                .code(429)
+                .exceptionName("Too many requests")
+                .exceptionMessage(e.getMessage())
+                .stackTrace(e.getStackTrace())
+                .build();
+
+        log.atInfo().addKeyValue("error", mapper.writeValueAsString(response)).log();
+
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(response);
     }
 }

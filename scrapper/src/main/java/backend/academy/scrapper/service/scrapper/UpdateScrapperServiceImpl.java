@@ -1,6 +1,6 @@
 package backend.academy.scrapper.service.scrapper;
 
-import backend.academy.scrapper.config.ScrapperConfigProperties;
+import backend.academy.scrapper.config.scrapper.ScrapperConfigProperties;
 import backend.academy.scrapper.dto.LightChatData;
 import backend.academy.scrapper.dto.LinkUpdate;
 import backend.academy.scrapper.model.Link;

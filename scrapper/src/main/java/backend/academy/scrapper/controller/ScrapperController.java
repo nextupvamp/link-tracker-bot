@@ -1,11 +1,13 @@
 package backend.academy.scrapper.controller;
 
+import backend.academy.scrapper.config.resilience.ResilienceConfig;
 import backend.academy.scrapper.dto.AddLinkRequest;
 import backend.academy.scrapper.dto.ChatData;
 import backend.academy.scrapper.dto.LinkSet;
 import backend.academy.scrapper.dto.RemoveLinkRequest;
 import backend.academy.scrapper.service.chat.ChatService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
@@ -28,6 +30,7 @@ public class ScrapperController {
     private final ChatService chatService;
 
     @GetMapping("tg-chat/{id}")
+    @RateLimiter(name = ResilienceConfig.RATE_LIMITER_NAME)
     public ChatData getChatData(@Positive @PathVariable long id) {
         log.atInfo().addKeyValue("request id", id).log();
 
@@ -36,6 +39,7 @@ public class ScrapperController {
 
     @PatchMapping("tg-chat")
     @SneakyThrows
+    @RateLimiter(name = ResilienceConfig.RATE_LIMITER_NAME)
     public void updateChatData(@Valid @RequestBody ChatData chat) {
         log.atInfo().addKeyValue("request", mapper.writeValueAsString(chat)).log();
 
@@ -43,6 +47,7 @@ public class ScrapperController {
     }
 
     @PostMapping("tg-chat/{id}")
+    @RateLimiter(name = ResilienceConfig.RATE_LIMITER_NAME)
     public void newChat(@Positive @PathVariable("id") long id) {
         log.atInfo().addKeyValue("request id", id).log();
 
@@ -50,6 +55,7 @@ public class ScrapperController {
     }
 
     @DeleteMapping("tg-chat/{id}")
+    @RateLimiter(name = ResilienceConfig.RATE_LIMITER_NAME)
     public void deleteChat(@Positive @PathVariable("id") long id) {
         log.atInfo().addKeyValue("request id", id).log();
 
@@ -57,6 +63,7 @@ public class ScrapperController {
     }
 
     @GetMapping("links")
+    @RateLimiter(name = ResilienceConfig.RATE_LIMITER_NAME)
     public LinkSet getAllLinks(@Positive @RequestParam("Tg-Chat-Id") long id) {
         log.atInfo().addKeyValue("request id", id).log();
 
@@ -69,6 +76,7 @@ public class ScrapperController {
 
     @PostMapping("links")
     @SneakyThrows
+    @RateLimiter(name = ResilienceConfig.RATE_LIMITER_NAME)
     public void addLink(@Positive @RequestParam("Tg-Chat-Id") long id, @RequestBody AddLinkRequest link) {
         log.atInfo()
                 .addKeyValue("request id", id)
@@ -80,6 +88,7 @@ public class ScrapperController {
 
     @DeleteMapping("links")
     @SneakyThrows
+    @RateLimiter(name = ResilienceConfig.RATE_LIMITER_NAME)
     public void deleteLink(@Positive @RequestParam("Tg-Chat-Id") long id, @RequestBody RemoveLinkRequest link) {
         log.atInfo()
                 .addKeyValue("request id", id)

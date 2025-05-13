@@ -39,6 +39,8 @@ public class TrackCommand implements BotCommand {
             } else {
                 return NOT_AVAILABLE;
             }
+        } catch (Exception e) {
+            return NOT_AVAILABLE;
         }
 
         return "Link " + tokens[1] + " has been added.\n" + "You can add tags or finish adding with /cancel";
