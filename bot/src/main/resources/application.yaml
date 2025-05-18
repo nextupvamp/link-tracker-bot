@@ -1,12 +1,14 @@
 app:
   telegram-token: ${TELEGRAM_TOKEN} # env variable
-  scrapper-url: http://localhost:8081
+  scrapper-url: http://scrapper:8081
   set-commands-url-format: https://api.telegram.org/bot%s/setMyCommands
   tg-chat-path: /tg-chat/
   link-path: /links?Tg-Chat-Id=
-  enable-kafka: false
+
   cache:
     cache-ttl: 5
+
+  enable-kafka: false
   kafka:
     concurrency: 3
     group-id: group
@@ -15,6 +17,7 @@ app:
       attempts: 1
       multiplier: 2
       delay: 5000
+
   resilience:
     circuit-breaker-failure-rate-threshold: 100
     circuit-breaker-minimum-number-of-calls: 10
@@ -45,16 +48,19 @@ spring:
       fetch.max.wait.ms: 10000
       max.poll.interval.ms: 10000
       max.poll.records: 10
-      bootstrap-servers: localhost:19092, localhost:29092, localhost:9092
+      bootstrap-servers: localhost:19092, localhost:29092
 
       producer.properties:
         spring:
             json.add.type.headers: false
-        bootstrap-servers: localhost:19092, localhost:29092, localhost:9092
+        bootstrap-servers: localhost:19092, localhost:29092
+
   application:
     name: Bot
+
   liquibase:
     enabled: false
+
   jpa:
     hibernate:
       ddl-auto: validate

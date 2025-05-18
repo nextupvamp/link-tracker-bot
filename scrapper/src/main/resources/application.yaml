@@ -3,7 +3,7 @@ app:
   stackoverflow:
     key: ${SO_TOKEN_KEY}
     access-token: ${SO_ACCESS_TOKEN}
-  bot-url: http://localhost:8080
+  bot-url: http://bot:8080
   github-api-url: https://api.github.com
   github-repo-issue-format: repos/%s/issues?per_page=1
   stack-exchange-api-url: https://api.stackexchange.com/2.2
@@ -12,10 +12,12 @@ app:
   preview-size: 200
   access-type: jpa
   main-transport: http
+
   kafka:
     topic: update
     partitions: 3
     replication-factor: 1
+
   resilience:
     circuit-breaker-failure-rate-threshold: 100
     circuit-breaker-minimum-number-of-calls: 10
@@ -42,18 +44,22 @@ spring:
       properties.spring:
           json.add.type.headers: false
       bootstrap-servers: localhost:19092, localhost:29092
+
   datasource:
-    url: jdbc:postgresql://localhost:5432/postgres
+    url: jdbc:postgresql://postgresql:5432/postgres
     username: postgres
     password: postgres
     driver-class-name: org.postgresql.Driver
+
   application:
     name: Scrapper
+
   liquibase:
     enabled: true
     drop-first: false
     change-log: classpath:db/changelog/db.changelog-master.xml
     default-schema: public
+
   jpa:
     hibernate:
       ddl-auto: validate

@@ -3,94 +3,103 @@ version: '3'
 services:
   postgresql:
     container_name: postgres
-    build: /postgres
     image: postgres:17-alpine
-    ports:
-      - "5432:5432"
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
+    networks:
+      - net
+    ports:
+      - "5432:5432"
+    hostname: postgresql
 
   bot:
     container_name: bot
     build: /bot
     depends_on:
       - scrapper
-    ports:
-      - "8080:8080"
     env_file:
       - bot/bot.env
     command: bash -c "sleep 10; java -jar bot.jar"
+    ports:
+      - "8080:8080"
+    networks:
+      - net
+    hostname: bot
 
   scrapper:
     container_name: scrapper
     build: /scrapper
     depends_on:
-      - liquibase-migrations
+      - postgresql
     ports:
       - "8081:8081"
-
-  liquibase-migrations:
-    container_name: migrations
-    image: liquibase/liquibase:4.29
-    depends_on:
-      - postgresql
-    command:
-      - --searchPath=/changesets
-      - --changelog-file=master.xml
-      - --driver=org.postgresql.Driver
-      - --url=jdbc:postgresql://localhost:5432/postgres
-      - --username=postgres
-      - --password=postgres
-      - update
-    volumes:
-      - ./migrations:/changesets
+    networks:
+      - net
+    hostname: scrapper
 
   zookeeper:
-    image: confluentinc/cp-zookeeper:latest
-    hostname: zookeeper
+    image: confluentinc/cp-zookeeper:6.2.1
     container_name: zookeeper
+    environment:
+      ZOOKEEPER_SERVER_ID: 1
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      ZOOKEEPER_INIT_LIMIT: 5
+      ZOOKEEPER_SYNC_LIMIT: 2
     ports:
       - "2181:2181"
-    environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
+    networks:
+      - net
+    hostname: zookeeper
 
   kafka-1:
     image: confluentinc/cp-kafka:latest
-    hostname: kafka
     container_name: kafka-1
-    ports:
-      - "19092:19092"
     environment:
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-1:9092,DOCKER://localhost:19092
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,DOCKER:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_BROKER_ID: 1
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 2
       KAFKA_MIN_IN_SYNC_REPLICAS: 2
     depends_on:
       - zookeeper
+    ports:
+      - "19092:19092"
+    networks:
+      - net
+    hostname: kafka-1
 
   kafka-2:
     image: confluentinc/cp-kafka:latest
-    hostname: kafka
     container_name: kafka-2
-    ports:
-      - "29092:29092"
     environment:
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-2:9092,DOCKER://localhost:29092
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,DOCKER:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_BROKER_ID: 2
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 2
       KAFKA_MIN_IN_SYNC_REPLICAS: 2
     depends_on:
       - zookeeper
+    ports:
+      - "29092:29092"
+    networks:
+      - net
+    hostname: kafka-2
 
   redis:
     image: redis:latest
     container_name: redis
     ports:
       - "6379:6379"
+    networks:
+      - net
+    hostname: redis
+
+networks:
+  net:
+    driver: bridge

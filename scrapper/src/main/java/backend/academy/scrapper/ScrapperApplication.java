@@ -28,20 +28,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 @Slf4j
 public class ScrapperApplication {
     public static void main(String[] args) {
-        var context = SpringApplication.run(ScrapperApplication.class, args);
-        var dataSource = context.getBean(DataSource.class);
-        try (var connection = dataSource.getConnection()) {
-            Database database =
-                    DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(connection));
-
-            DatabaseChangeLog changelog = new DatabaseChangeLog("migrations/master.xml");
-
-            Liquibase liquibase = new Liquibase(changelog, new ClassLoaderResourceAccessor(), database);
-
-            liquibase.update(new Contexts(), new LabelExpression());
-        } catch (LiquibaseException | SQLException e) {
-            log.info("Liquibase migration has been failed");
-        }
-        log.info("Liquibase migration has been executed successfully");
+        SpringApplication.run(ScrapperApplication.class, args);
     }
 }
