@@ -14,6 +14,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 @Slf4j
 @Component
 public class BotHttpClient implements BotClient {
+
     private final WebClient webClient;
     private final ScrapperConfigProperties config;
     private final ResilienceConfig.ResilienceFeatures resilienceFeatures;

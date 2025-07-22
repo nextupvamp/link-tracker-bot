@@ -21,6 +21,7 @@ import org.springframework.test.context.TestPropertySource;
         })
 @Import(TestcontainersConfiguration.class)
 public class ScrapperControllerTest {
+
     @LocalServerPort
     private int port;
 

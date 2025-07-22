@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 @ControllerAdvice
 @AllArgsConstructor
 public class ScrapperControllerAdvice {
+
     private final ObjectMapper mapper;
 
     @ExceptionHandler(NoSuchElementException.class)

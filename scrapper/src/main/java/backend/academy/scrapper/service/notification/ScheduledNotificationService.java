@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @EnableScheduling
 public class ScheduledNotificationService implements NotificationService {
+
     private static final int RATE = 60_000;
 
     private UpdateSendingService mainSendingService;

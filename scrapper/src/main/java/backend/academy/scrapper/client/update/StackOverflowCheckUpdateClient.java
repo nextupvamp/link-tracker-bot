@@ -5,6 +5,7 @@ import backend.academy.scrapper.config.resilience.ResilienceConfig;
 import backend.academy.scrapper.config.scrapper.ScrapperConfigProperties;
 import backend.academy.scrapper.dto.ApiErrorResponse;
 import backend.academy.scrapper.dto.Update;
+import backend.academy.scrapper.model.Site;
 import backend.academy.scrapper.model.Subscription;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
@@ -20,6 +21,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 @Slf4j
 @Component
 public class StackOverflowCheckUpdateClient implements CheckUpdateClient {
+
     private static final Pattern STACK_OVERFLOW_URL_REGEX =
             Pattern.compile("https://stackoverflow\\.com/questions/(?<id>[0-9]+)/.*");
 
@@ -40,6 +42,10 @@ public class StackOverflowCheckUpdateClient implements CheckUpdateClient {
 
     @Override
     public Optional<Update> checkUpdates(Subscription subscription) {
+        if (subscription.site() != Site.STACKOVERFLOW) {
+            return Optional.empty();
+        }
+
         QuestionResponse questionResponse = getQuestion(subscription.url());
 
         if (questionResponse == null || questionResponse.questions() == null) {
@@ -48,7 +54,6 @@ public class StackOverflowCheckUpdateClient implements CheckUpdateClient {
         }
 
         Question question = questionResponse.questions().getFirst();
-
         long lastActivityDate = question.lastActivityDate();
         if (lastActivityDate > subscription.lastUpdate()) {
             subscription.lastUpdate(lastActivityDate);
@@ -94,12 +99,13 @@ public class StackOverflowCheckUpdateClient implements CheckUpdateClient {
     }
 
     private String getQuestionApiPath(String questionUrl) {
-        return "/questions/" + getQuestionId(questionUrl) + "?site=stackoverflow";
+        return String.format("/questions/%s?site=stackoverflow", getQuestionId(questionUrl));
     }
 
     private String getLastAnswerApiPath(String questionUrl) {
-        return "/questions/" + getQuestionId(questionUrl)
-                + "answers?pagesize=1&order=desc&sort=activity&site=stackoverflow&filter=!nNPvSNe7Gv";
+        return String.format(
+                "/questions/%sanswers?pagesize=1&order=desc&sort=activity&site=stackoverflow&filter=!nNPvSNe7Gv",
+                getQuestionId(questionUrl));
     }
 
     private String getQuestionId(String questionUrl) {

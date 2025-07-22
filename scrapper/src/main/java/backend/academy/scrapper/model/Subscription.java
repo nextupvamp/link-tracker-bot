@@ -12,14 +12,17 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.util.HashSet;
 import java.util.Set;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Table(name = "subscription")
 @Entity
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 public class Subscription {
+
     @Id
     private String url;
 

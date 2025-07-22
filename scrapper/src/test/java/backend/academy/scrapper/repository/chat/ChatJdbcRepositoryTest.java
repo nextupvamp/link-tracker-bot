@@ -12,6 +12,7 @@ import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 public class ChatJdbcRepositoryTest extends CommonPostgresJdbcTest {
+
     private static final Chat CHAT;
 
     static {

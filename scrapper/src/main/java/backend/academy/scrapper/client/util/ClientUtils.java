@@ -16,6 +16,7 @@ import reactor.core.publisher.Mono;
 
 @UtilityClass
 public class ClientUtils {
+
     private static final Set<Integer> RETRYABLE_CODES = Set.of(408, 429, 502, 503, 504);
 
     public static ExchangeFilterFunction logRequest(Logger logger) {

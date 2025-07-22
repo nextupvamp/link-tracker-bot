@@ -20,6 +20,7 @@ import org.springframework.test.context.TestPropertySource;
 @Import(TestcontainersConfiguration.class)
 @TestPropertySource(properties = "app.access-type=jpa")
 public class JpaPersistenceImplementationTest {
+
     @Autowired
     private ApplicationContext applicationContext;
 

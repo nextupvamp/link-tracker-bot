@@ -45,6 +45,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
         })
 @TestPropertySource(properties = "app.access-type=jpa")
 public class UpdateScrapperServiceTest {
+
     @MockitoBean
     private GitHubCheckUpdateClient gitHubClient;
 

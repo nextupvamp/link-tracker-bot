@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Repository
 @AllArgsConstructor
 public class ChatJdbcRepository implements ChatRepository {
+
     private final ChatRowMapper CHAT_ROW_MAPPER = new ChatRowMapper();
     private final LinkRowMapper LINK_ROW_MAPPER = new LinkRowMapper();
     private final FilterRowMapper FILTER_ROW_MAPPER = new FilterRowMapper();

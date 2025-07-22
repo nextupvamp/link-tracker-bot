@@ -5,6 +5,7 @@ import backend.academy.scrapper.config.resilience.ResilienceConfig;
 import backend.academy.scrapper.config.scrapper.ScrapperConfigProperties;
 import backend.academy.scrapper.dto.ApiErrorResponse;
 import backend.academy.scrapper.dto.Update;
+import backend.academy.scrapper.model.Site;
 import backend.academy.scrapper.model.Subscription;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.ZonedDateTime;
@@ -20,6 +21,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 @Slf4j
 @Component
 public class GitHubCheckUpdateClient implements CheckUpdateClient {
+
     private static final Pattern GITHUB_URL_REGEX = Pattern.compile("https://github.com/(?<owner>.*)/(?<repo>.*)");
 
     private final WebClient webClient;
@@ -41,15 +43,18 @@ public class GitHubCheckUpdateClient implements CheckUpdateClient {
 
     @Override
     public Optional<Update> checkUpdates(Subscription subscription) {
+        if (subscription.site() != Site.GITHUB) {
+            return Optional.empty();
+        }
+
         Issue[] issues = getIssues(subscription);
 
         if (issues == null || issues[0] == null) {
-            log.atInfo().setMessage("GitHub sent null response").log();
+            log.atWarn().setMessage("GitHub sent null response").log();
             return Optional.empty();
         }
 
         Issue issue = issues[0];
-
         long lastActivityDate = issue.createdAt().toEpochSecond();
         if (lastActivityDate > subscription.lastUpdate()) {
             subscription.lastUpdate(lastActivityDate);
@@ -82,7 +87,7 @@ public class GitHubCheckUpdateClient implements CheckUpdateClient {
         Matcher matcher = GITHUB_URL_REGEX.matcher(repoUrl);
         String ownerRepoApiPath = "";
         if (matcher.matches()) {
-            ownerRepoApiPath = matcher.group("owner") + "/" + matcher.group("repo");
+            ownerRepoApiPath = String.format("%s/%s", matcher.group("owner"), matcher.group("repo"));
         }
 
         return String.format(config.githubRepoIssueFormat(), ownerRepoApiPath);

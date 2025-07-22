@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
 public class GitHubCheckUpdateClientTest extends CommonClientTest {
+
     // basically, any of 4xx and 5xx statuses will cause a ResponseStatusException with appropriate
     // status code in it
     @Test

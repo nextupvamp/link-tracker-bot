@@ -17,17 +17,20 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Table(name = "link")
 @Entity
-@Data
+@Getter
+@Setter
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @NoArgsConstructor
 @AllArgsConstructor
 public class Link {
+
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "link_seq")
     @SequenceGenerator(name = "link_seq", sequenceName = "link_seq", allocationSize = 1)

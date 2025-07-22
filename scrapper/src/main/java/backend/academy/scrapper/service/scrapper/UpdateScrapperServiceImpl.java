@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 @AllArgsConstructor
 @Service
 public class UpdateScrapperServiceImpl implements UpdateScrapperService {
+
     private final ScrapperConfigProperties config;
     private final UpdateCheckersChain updateCheckersChain;
     private final SubscriptionRepository subscriptionRepository;
@@ -58,7 +59,7 @@ public class UpdateScrapperServiceImpl implements UpdateScrapperService {
 
     private String formatPreview(String source, int size) {
         if (source.length() > size) {
-            return source.substring(0, size) + "...";
+            return String.format("%s...", source.substring(0, size));
         }
         return source;
     }

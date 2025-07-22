@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 @Service
 @AllArgsConstructor
 public class HttpUpdateSendingService implements UpdateSendingService {
+
     private final BotHttpClient botHttpClient;
 
     @Override

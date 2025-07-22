@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 @Service
 @AllArgsConstructor
 public class KafkaUpdateSenderService implements UpdateSendingService {
+
     private final KafkaConfigProperties properties;
     private final KafkaTemplate<String, LinkUpdate> kafkaTemplate;
 

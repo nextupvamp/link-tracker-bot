@@ -23,6 +23,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 @EnableConfigurationProperties(ScrapperConfigProperties.class)
 @TestPropertySource(properties = {"app.main-transport=http"})
 public class ScheduledNotificationServiceTest {
+
     @MockitoBean
     private KafkaUpdateSenderService kafkaUpdateSenderService;
 

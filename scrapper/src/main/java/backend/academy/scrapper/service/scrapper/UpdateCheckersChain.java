@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 @Component
 @AllArgsConstructor
 public class UpdateCheckersChain {
+
     private final List<CheckUpdateClient> checkers;
 
     public Update checkUpdates(Subscription subscription) {

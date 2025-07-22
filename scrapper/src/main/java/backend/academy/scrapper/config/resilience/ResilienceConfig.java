@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 @Configuration
 @AllArgsConstructor
 public class ResilienceConfig {
+
     public static final String RETRY_NAME = "default";
     public static final String CIRCUIT_BREAKER_NAME = "default";
     public static final String RATE_LIMITER_NAME = "default";

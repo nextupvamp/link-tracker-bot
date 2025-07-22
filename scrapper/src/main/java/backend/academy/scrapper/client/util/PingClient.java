@@ -5,6 +5,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 @Component
 public class PingClient {
+
     private final WebClient webClient;
 
     public PingClient(WebClient.Builder builder) {

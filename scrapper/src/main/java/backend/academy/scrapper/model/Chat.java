@@ -11,28 +11,26 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
-import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Table(name = "chat")
 @Entity
-@Data
+@Getter
+@Setter
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @NoArgsConstructor
 public class Chat {
+
     @Id
-    @Positive
-    @NotNull
     @EqualsAndHashCode.Include
     private Long id;
 
-    @NotNull
     @Enumerated(EnumType.STRING)
     private ChatState state;
 

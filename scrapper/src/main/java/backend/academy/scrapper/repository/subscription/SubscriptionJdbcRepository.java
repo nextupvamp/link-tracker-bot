@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Repository
 @RequiredArgsConstructor
 public class SubscriptionJdbcRepository implements SubscriptionRepository {
+
     private static final SubscriptionRowMapper SUBSCRIPTION_ROW_MAPPER = new SubscriptionRowMapper();
 
     private final ChatJdbcRepository chatRepository; // dry

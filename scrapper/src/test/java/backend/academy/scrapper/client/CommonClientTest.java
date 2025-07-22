@@ -21,6 +21,7 @@ import org.springframework.web.reactive.function.client.WebClient;
         })
 @EnableConfigurationProperties(ResilienceConfigProperties.class)
 public class CommonClientTest {
+
     protected final ScrapperConfigProperties config = new ScrapperConfigProperties(
             null,
             null,

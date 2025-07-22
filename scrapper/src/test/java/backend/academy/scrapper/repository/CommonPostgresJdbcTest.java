@@ -16,6 +16,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @Import({ChatJdbcRepository.class, SubscriptionJdbcRepository.class, TestcontainersConfiguration.class})
 @TestPropertySource(properties = "app.access-type=jdbc")
 public class CommonPostgresJdbcTest {
+
     @Autowired
     protected SubscriptionJdbcRepository subscriptionRepository;
 

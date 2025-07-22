@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.PageRequest;
 
 public class SubscriptionJdbcRepositoryTest extends CommonPostgresJdbcTest {
+
     private static final String URL = "url";
     private static final Site SITE = Site.GITHUB;
     private static final Subscription SUBSCRIPTION;
@@ -41,7 +42,12 @@ public class SubscriptionJdbcRepositoryTest extends CommonPostgresJdbcTest {
     public void testSaveAndFindById() {
         subscriptionRepository.save(SUBSCRIPTION);
 
-        assertThat(SUBSCRIPTION).isEqualTo(subscriptionRepository.findById(URL).orElseThrow());
+        var persistedSub = subscriptionRepository.findById(URL).orElseThrow();
+        assertThat(persistedSub.url()).isEqualTo(SUBSCRIPTION.url());
+        assertThat(persistedSub.site()).isEqualTo(SUBSCRIPTION.site());
+        assertThat(persistedSub.subscribers()).isEqualTo(SUBSCRIPTION.subscribers());
+        assertThat(persistedSub.updated()).isEqualTo(SUBSCRIPTION.updated());
+        assertThat(persistedSub.lastUpdate()).isEqualTo(SUBSCRIPTION.lastUpdate());
     }
 
     @Test
@@ -54,7 +60,23 @@ public class SubscriptionJdbcRepositoryTest extends CommonPostgresJdbcTest {
         var result = subscriptionRepository.findAll(PageRequest.of(0, 2));
 
         assertThat(result).hasSize(2);
-        assertThat(result).containsExactly(SUBSCRIPTION, subscription2);
+        var persistedSub1 =
+                result.stream().filter(sub -> sub.url().equals(URL)).findFirst().orElseThrow();
+        var persistedSub2 = result.stream()
+                .filter(sub -> sub.url().equals(URL + 1))
+                .findFirst()
+                .orElseThrow();
+
+        assertThat(persistedSub1.url()).isEqualTo(SUBSCRIPTION.url());
+        assertThat(persistedSub1.site()).isEqualTo(SUBSCRIPTION.site());
+        assertThat(persistedSub1.subscribers()).isEqualTo(SUBSCRIPTION.subscribers());
+        assertThat(persistedSub1.updated()).isEqualTo(SUBSCRIPTION.updated());
+        assertThat(persistedSub1.lastUpdate()).isEqualTo(SUBSCRIPTION.lastUpdate());
+        assertThat(persistedSub2.url()).isEqualTo(subscription2.url());
+        assertThat(persistedSub2.site()).isEqualTo(subscription2.site());
+        assertThat(persistedSub2.subscribers()).isEqualTo(subscription2.subscribers());
+        assertThat(persistedSub2.updated()).isEqualTo(subscription2.updated());
+        assertThat(persistedSub2.lastUpdate()).isEqualTo(subscription2.lastUpdate());
     }
 
     @Test

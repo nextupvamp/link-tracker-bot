@@ -17,6 +17,7 @@ import org.springframework.kafka.support.serializer.JsonSerializer;
 @EnableKafka
 @AllArgsConstructor
 public class KafkaConfig {
+
     private final KafkaProperties kafkaProperties;
 
     @Bean

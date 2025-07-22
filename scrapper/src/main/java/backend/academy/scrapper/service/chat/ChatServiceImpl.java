@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @AllArgsConstructor
 public class ChatServiceImpl implements ChatService {
+
     private static final Supplier<NoSuchElementException> CHAT_NOT_FOUND =
             () -> new NoSuchElementException("Chat not found");
     private static final Pattern STACKOVERFLOW_URL_PATTERN =
@@ -60,8 +61,8 @@ public class ChatServiceImpl implements ChatService {
 
         if (chat.currentEditedLink() != null
                 && !isUrlValid(chat.currentEditedLink().url())) {
-            throw new IllegalArgumentException(
-                    "Unsupported or invalid URL: " + chat.currentEditedLink().url());
+            throw new IllegalArgumentException(String.format(
+                    "Unsupported or invalid URL: %s", chat.currentEditedLink().url()));
         }
 
         if (chatData.links() != null) {
@@ -73,7 +74,6 @@ public class ChatServiceImpl implements ChatService {
             }
 
         } else if (chatData.currentEditedLink() != null) {
-            // Set.of() causes UOE
             var links = new HashSet<Link>();
             links.add(chat.currentEditedLink());
             chat.links(links);
@@ -93,7 +93,7 @@ public class ChatServiceImpl implements ChatService {
         Chat chat = chatRepository.findById(id).orElseThrow(CHAT_NOT_FOUND);
 
         if (!isUrlValid(link.url())) {
-            throw new IllegalArgumentException("Unsupported or invalid URL: " + link.url());
+            throw new IllegalArgumentException(String.format("Unsupported or invalid URL: %s", link.url()));
         }
 
         Link addedLink = new Link(link.url(), link.tags(), link.filters());
@@ -158,6 +158,6 @@ public class ChatServiceImpl implements ChatService {
             return Site.GITHUB;
         }
 
-        throw new IllegalArgumentException("Unknown site type: " + url);
+        throw new IllegalArgumentException(String.format("Unknown site type: %s", url));
     }
 }
