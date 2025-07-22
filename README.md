@@ -1,27 +1,24 @@
-![Build](https://github.com/central-university-dev/backend-academy-2025-spring-template/actions/workflows/build.yaml/badge.svg)
-
 # Link Tracker
 
-<!-- этот файл можно и нужно менять -->
+**Content Update Tracking Application**  
+The application tracks content updates via URLs and sends Telegram notifications when new events occur.
 
-Проект сделан в рамках курса Академия Бэкенда.
+The project is written in `Java 23` using `Spring Boot 3`.
 
-Приложение для отслеживания обновлений контента по ссылкам.
-При появлении новых событий отправляется уведомление в Telegram.
+### Project Structure
+The project consists of two applications:
+- Bot
+- Scrapper
 
-Проект написан на `Java 23` с использованием `Spring Boot 3`.
+### Required Services
+- PostgreSQL
+- Redis
+- Kafka
 
-Проект состоит из 2-х приложений:
-* Bot
-* Scrapper
-
-Для работы требуется БД `PostgreSQL`. Присутствует опциональная зависимость на `Kafka`.
-
-Для дополнительной справки: [HELP.md](./HELP.md)
-
-## Сборка и запуск
-
-- `mvn clean verify`
-- `docker-compose build`
-- `docker-compose up`
-
+### Build and Run
+- Build the project:  
+`mvn clean verify`  
+- Build Docker images:  
+`docker-compose build`  
+- Start the services:  
+`docker-compose up`  
