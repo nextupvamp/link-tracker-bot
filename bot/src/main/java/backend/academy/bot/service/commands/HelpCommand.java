@@ -1,6 +1,7 @@
 package backend.academy.bot.service.commands;
 
 import backend.academy.bot.client.ScrapperClient;
+import backend.academy.bot.exception.MessageForUserException;
 import backend.academy.bot.model.ChatState;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Component;
 @AllArgsConstructor
 @Component
 public class HelpCommand implements BotCommand {
+
     private static final String MANUAL_FILE = "manual.txt";
 
     private final ScrapperClient scrapperClient;
@@ -21,7 +23,7 @@ public class HelpCommand implements BotCommand {
     public String execute(long chatId, String[] tokens) {
         try {
             commons.getChatDataWithState(chatId, scrapperClient, ChatState.DEFAULT);
-        } catch (Exception e) {
+        } catch (MessageForUserException e) {
             return e.getMessage();
         }
 

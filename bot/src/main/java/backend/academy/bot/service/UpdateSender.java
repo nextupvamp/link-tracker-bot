@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 @Service
 @AllArgsConstructor
 public class UpdateSender {
+
     private final TelegramBot bot;
 
     public void sendUpdates(LinkUpdate linkUpdate) {

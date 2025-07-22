@@ -7,7 +7,6 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,11 +25,11 @@ import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @Configuration
-@ConditionalOnProperty(prefix = "app", name = "enable-kafka", havingValue = "true")
 @EnableKafkaRetryTopic
 @AllArgsConstructor
 @EnableScheduling
 public class KafkaConfig {
+
     public static final String KAFKA_TEMPLATE_NAME = "kafkaTemplate";
 
     private final KafkaProperties kafkaProperties;

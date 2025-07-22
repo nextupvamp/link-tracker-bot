@@ -1,6 +1,7 @@
 package backend.academy.bot.service.commands;
 
 import backend.academy.bot.client.ScrapperClient;
+import backend.academy.bot.exception.MessageForUserException;
 import backend.academy.bot.model.ChatData;
 import backend.academy.bot.model.ChatState;
 import java.util.Collections;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Component;
 @AllArgsConstructor
 @Component
 public class PlainTextCommand implements BotCommand {
+
     private final ScrapperClient scrapperClient;
     private final CommandCachingManager cachingManager;
     private final CommandCommons commons;
@@ -25,12 +27,13 @@ public class PlainTextCommand implements BotCommand {
             if (chatData.state() == ChatState.DEFAULT) {
                 return "Command not found";
             }
-        } catch (Exception e) {
+        } catch (MessageForUserException e) {
             return e.getMessage();
         }
 
         return switch (chatData.state()) {
-            case DEFAULT -> throw new IllegalStateException("Unexpected chat state: " + chatData.state());
+            case DEFAULT -> throw new IllegalStateException(
+                    String.format("Unexpected chat state: %s", chatData.state()));
             case ENTERING_TAGS -> {
                 var currentLink = chatData.currentEditedLink();
                 Set<String> tags = currentLink.tags();
@@ -45,12 +48,12 @@ public class PlainTextCommand implements BotCommand {
                 try {
                     scrapperClient.updateChat(chatData);
                 } catch (Exception e) {
-                    yield NOT_AVAILABLE;
+                    yield CommandCommons.NOT_AVAILABLE;
                 }
 
                 cachingManager.evictCache(chatId);
-                reply.append(
-                        "You can add filters or finish adding with /cancel. In the current version only filtering by the user is available");
+                reply.append("You can add filters or finish adding with /cancel. "
+                        + "In the current version only filtering by the user is available");
                 yield reply.toString();
             }
             case ENTERING_FILTERS -> {
@@ -65,7 +68,8 @@ public class PlainTextCommand implements BotCommand {
                         filters.put(keyValue[0], keyValue[1]);
                         reply.append(token).append("\n");
                     } else {
-                        yield "Wrong format \"" + token + "\". Try \"<key1>=<value1> <key2>=<value2>...\"";
+                        yield String.format(
+                                "Wrong format \"%s\". Try Try \"<key1>=<value1> <key2>=<value2>...\"", token);
                     }
                 }
 

@@ -5,6 +5,7 @@ import backend.academy.bot.model.ChatData;
 import backend.academy.bot.model.Link;
 
 public interface ScrapperClient {
+
     ChatData getChatData(long chatId);
 
     void updateChat(ChatData chatData);

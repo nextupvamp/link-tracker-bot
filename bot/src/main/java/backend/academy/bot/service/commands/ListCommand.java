@@ -1,6 +1,7 @@
 package backend.academy.bot.service.commands;
 
 import backend.academy.bot.client.ScrapperClient;
+import backend.academy.bot.exception.MessageForUserException;
 import backend.academy.bot.model.ChatState;
 import lombok.AllArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
@@ -10,6 +11,7 @@ import org.springframework.web.server.ResponseStatusException;
 @AllArgsConstructor
 @Component
 public class ListCommand implements BotCommand {
+
     private final ScrapperClient scrapperClient;
     private final CommandCommons commons;
 
@@ -18,7 +20,7 @@ public class ListCommand implements BotCommand {
     public String execute(long chatId, String[] tokens) {
         try {
             commons.getChatDataWithState(chatId, scrapperClient, ChatState.DEFAULT);
-        } catch (Exception e) {
+        } catch (MessageForUserException e) {
             return e.getMessage();
         }
 
@@ -35,11 +37,11 @@ public class ListCommand implements BotCommand {
             return reply.toString();
         } catch (ResponseStatusException e) {
             if (e.getStatusCode().is5xxServerError()) {
-                return NOT_AVAILABLE;
+                return CommandCommons.NOT_AVAILABLE;
             }
-            return String.format(ERROR_RESPONSE_FORMAT, "get list of links");
+            return String.format(CommandCommons.ERROR_RESPONSE_FORMAT, "get list of links");
         } catch (Exception e) {
-            return NOT_AVAILABLE;
+            return CommandCommons.NOT_AVAILABLE;
         }
     }
 

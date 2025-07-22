@@ -10,6 +10,7 @@ import org.springframework.web.server.ResponseStatusException;
 @AllArgsConstructor
 @Component
 public class StartCommand implements BotCommand {
+
     private final ScrapperClient scrapperClient;
 
     @Override
@@ -18,15 +19,19 @@ public class StartCommand implements BotCommand {
         ChatData newChat;
         try {
             newChat = scrapperClient.getChatData(chatId);
-        } catch (ResponseStatusException e) { // if 404
-            scrapperClient.addChat(chatId);
-            return "Hello! You can see the bot's commands by entering /help";
+        } catch (ResponseStatusException e) {
+            if (e.getStatusCode().value() == 404) {
+                scrapperClient.addChat(chatId);
+                return "Hello! You can see the bot's commands by entering /help";
+            } else {
+                return CommandCommons.NOT_AVAILABLE;
+            }
         } catch (Exception e) {
-            return NOT_AVAILABLE;
+            return CommandCommons.NOT_AVAILABLE;
         }
 
         if (newChat.state() != ChatState.DEFAULT) {
-            return NOT_APPLICABLE;
+            return CommandCommons.NOT_APPLICABLE;
         } else {
             return "You've already started! Enter /help to see bot's commands.";
         }

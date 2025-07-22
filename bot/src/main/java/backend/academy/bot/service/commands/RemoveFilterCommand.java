@@ -1,6 +1,7 @@
 package backend.academy.bot.service.commands;
 
 import backend.academy.bot.client.ScrapperClient;
+import backend.academy.bot.exception.MessageForUserException;
 import backend.academy.bot.model.ChatData;
 import backend.academy.bot.model.ChatState;
 import lombok.AllArgsConstructor;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Component;
 @Component
 @AllArgsConstructor
 public class RemoveFilterCommand implements BotCommand {
+
     private final CommandCommons commons;
     private final CommandCachingManager cache;
     private final ScrapperClient scrapperClient;
@@ -18,7 +20,7 @@ public class RemoveFilterCommand implements BotCommand {
         ChatData chatData;
         try {
             chatData = commons.getChatDataWithState(chatId, scrapperClient, ChatState.DEFAULT);
-        } catch (Exception e) {
+        } catch (MessageForUserException e) {
             return e.getMessage();
         }
 
@@ -38,7 +40,7 @@ public class RemoveFilterCommand implements BotCommand {
         try {
             scrapperClient.updateChat(chatData);
         } catch (Exception e) {
-            return NOT_AVAILABLE;
+            return CommandCommons.NOT_AVAILABLE;
         }
 
         cache.evictCache(chatId);

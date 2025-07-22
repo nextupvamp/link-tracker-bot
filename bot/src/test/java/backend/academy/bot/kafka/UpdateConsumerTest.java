@@ -23,6 +23,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 @Import(KafkaTestConfiguration.class)
 @TestPropertySource(properties = {"app.kafka.topic=updates-test", "app.enable-kafka=true"})
 public class UpdateConsumerTest {
+
     private static final String TOPIC = "updates-test";
 
     @MockitoBean

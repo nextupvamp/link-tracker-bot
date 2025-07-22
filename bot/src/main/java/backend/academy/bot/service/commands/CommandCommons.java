@@ -1,6 +1,7 @@
 package backend.academy.bot.service.commands;
 
 import backend.academy.bot.client.ScrapperClient;
+import backend.academy.bot.exception.MessageForUserException;
 import backend.academy.bot.model.ChatData;
 import backend.academy.bot.model.ChatState;
 import lombok.AllArgsConstructor;
@@ -11,6 +12,12 @@ import org.springframework.web.server.ResponseStatusException;
 @Component
 @AllArgsConstructor
 public class CommandCommons {
+
+    public static final String ERROR_RESPONSE_FORMAT = "An error occurred while trying to %s. Try again.";
+    public static final String NOT_AVAILABLE = "Service is not available. Try again later.";
+    public static final String NOT_APPLICABLE = "The command is not applicable on this stage.";
+    public static final String NOT_STARTED = "Bot is not started.";
+
     private final CommandCachingManager cache;
 
     public String finishAdding(long chatId, ChatData chatData, ScrapperClient scrapperClient) {
@@ -23,49 +30,49 @@ public class CommandCommons {
             return "You've successfully finished adding.";
         } catch (ResponseStatusException e) {
             if (e.getStatusCode().is5xxServerError()) {
-                return BotCommand.NOT_AVAILABLE;
+                return NOT_AVAILABLE;
             }
-            return String.format(BotCommand.ERROR_RESPONSE_FORMAT, "add new link (unsupported or invalid link)");
+            return String.format(ERROR_RESPONSE_FORMAT, "add new link (unsupported or invalid link)");
         } catch (Exception e) {
-            return BotCommand.NOT_AVAILABLE;
+            return NOT_AVAILABLE;
         }
     }
 
     public ChatData getChatDataWithState(long chatId, ScrapperClient scrapperClient, ChatState chatState)
-            throws Exception {
+            throws MessageForUserException {
         ChatData chatData = getChatData(chatId, scrapperClient);
 
         if (chatData.state() != chatState) {
-            throw new Exception(BotCommand.NOT_APPLICABLE);
+            throw new MessageForUserException(NOT_APPLICABLE);
         }
 
         return chatData;
     }
 
     public ChatData getChatDataWithoutState(long chatId, ScrapperClient scrapperClient, ChatState chatState)
-            throws Exception {
+            throws MessageForUserException {
         ChatData chatData = getChatData(chatId, scrapperClient);
 
         if (chatData.state() == chatState) {
-            throw new Exception(BotCommand.NOT_APPLICABLE);
+            throw new MessageForUserException(NOT_APPLICABLE);
         }
 
         return chatData;
     }
 
-    public ChatData getChatData(long chatId, ScrapperClient scrapperClient) throws Exception {
+    public ChatData getChatData(long chatId, ScrapperClient scrapperClient) throws MessageForUserException {
         ChatData chatData;
 
         try {
             chatData = scrapperClient.getChatData(chatId);
         } catch (ResponseStatusException e) {
             if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
-                throw new Exception(BotCommand.NOT_STARTED);
+                throw new MessageForUserException(NOT_STARTED);
             } else {
-                throw new Exception(BotCommand.NOT_AVAILABLE);
+                throw new MessageForUserException(NOT_AVAILABLE);
             }
         } catch (Exception e) {
-            throw new Exception(BotCommand.NOT_AVAILABLE);
+            throw new MessageForUserException(NOT_AVAILABLE);
         }
 
         return chatData;

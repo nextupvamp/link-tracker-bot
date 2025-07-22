@@ -22,6 +22,7 @@ import org.springframework.test.context.TestPropertySource;
             "app.resilience.circuit-breaker-slow-call-duration-threshold=1"
         })
 public class CircuitBreakerTest extends CommonClientTest {
+
     @Test
     @SneakyThrows
     public void testCircuitBreaker() {

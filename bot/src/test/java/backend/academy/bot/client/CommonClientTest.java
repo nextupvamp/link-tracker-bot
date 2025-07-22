@@ -18,6 +18,7 @@ import org.springframework.web.reactive.function.client.WebClient;
         })
 @EnableConfigurationProperties(ResilienceConfigProperties.class)
 public class CommonClientTest {
+
     protected final BotConfigProperties config =
             new BotConfigProperties(null, "http://localhost:8080", null, "/tg-chat/", "/links?Tg-Chat-Id=");
 

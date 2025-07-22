@@ -15,6 +15,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 @Slf4j
 @Configuration
 public class BotConfig {
+
     @Bean
     public TelegramBot bot(BotConfigProperties botConfigProperties, MessageHandler messageHandler) {
         TelegramBot bot = new TelegramBot(botConfigProperties.telegramToken());

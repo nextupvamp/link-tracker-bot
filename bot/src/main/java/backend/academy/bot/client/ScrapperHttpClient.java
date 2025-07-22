@@ -24,6 +24,7 @@ import reactor.core.publisher.Mono;
 @Slf4j
 @Component
 public class ScrapperHttpClient implements ScrapperClient {
+
     private static final Set<Integer> RETRYABLE_CODES = Set.of(408, 429, 502, 503, 504);
 
     private final ResilienceConfig.ResilienceFeatures resilienceFeatures;

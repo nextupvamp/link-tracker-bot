@@ -9,6 +9,7 @@ import org.testcontainers.utility.DockerImageName;
 
 @TestConfiguration(proxyBeanMethods = false)
 public class RedisTestConfiguration {
+
     @Bean
     @RestartScope
     public GenericContainer<?> redisContainer() {

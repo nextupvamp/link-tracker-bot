@@ -20,6 +20,7 @@
 Для дополнительной справки: [HELP.md](./HELP.md)
 
 ## Сборка и запуск
+
 - `mvn clean verify`
 - `docker-compose build`
 - `docker-compose up`

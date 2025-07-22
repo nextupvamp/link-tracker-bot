@@ -1,6 +1,7 @@
 package backend.academy.bot.service.commands;
 
 import backend.academy.bot.client.ScrapperClient;
+import backend.academy.bot.exception.MessageForUserException;
 import backend.academy.bot.model.ChatData;
 import backend.academy.bot.model.ChatState;
 import backend.academy.bot.model.Link;
@@ -12,6 +13,7 @@ import org.springframework.web.server.ResponseStatusException;
 @AllArgsConstructor
 @Component
 public class TrackCommand implements BotCommand {
+
     private final ScrapperClient scrapperClient;
     private final CommandCommons commons;
 
@@ -19,12 +21,12 @@ public class TrackCommand implements BotCommand {
     public String execute(long chatId, String[] tokens) {
         try {
             commons.getChatDataWithState(chatId, scrapperClient, ChatState.DEFAULT);
-        } catch (Exception e) {
+        } catch (MessageForUserException e) {
             return e.getMessage();
         }
 
         if (tokens.length != 2) {
-            return "Wrong format. Try \"" + command() + " <url>\"";
+            return String.format("Wrong format. Try \"%s <url>\"", command());
         }
 
         ChatData chatData = new ChatData(chatId, ChatState.ENTERING_TAGS, new Link(tokens[1]), null);
@@ -33,17 +35,17 @@ public class TrackCommand implements BotCommand {
             scrapperClient.updateChat(chatData);
         } catch (ResponseStatusException e) {
             if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
-                return NOT_STARTED;
+                return CommandCommons.NOT_STARTED;
             } else if (e.getStatusCode() == HttpStatus.BAD_REQUEST) {
                 return "You cannot add that link: Unsupported or unavailable website.";
             } else {
-                return NOT_AVAILABLE;
+                return CommandCommons.NOT_AVAILABLE;
             }
         } catch (Exception e) {
-            return NOT_AVAILABLE;
+            return CommandCommons.NOT_AVAILABLE;
         }
 
-        return "Link " + tokens[1] + " has been added.\n" + "You can add tags or finish adding with /cancel";
+        return String.format("Link %s has been added.%nYou can add tags or finish adding with /cancel", tokens[1]);
     }
 
     @Override

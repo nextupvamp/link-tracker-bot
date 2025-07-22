@@ -28,13 +28,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cache.CacheManager;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @Import(RedisTestConfiguration.class)
 @SpringBootTest
-@TestPropertySource(properties = {"app.enable-kafla=false"})
 public class MessageHandlerTest {
+
     private static final String LF = "\n";
 
     @MockitoBean

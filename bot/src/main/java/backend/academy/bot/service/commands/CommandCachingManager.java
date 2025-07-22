@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class CommandCachingManager {
+
     public static final String CACHE_NAME = "commands";
 
     @CacheEvict(key = "#chatId", value = CACHE_NAME)

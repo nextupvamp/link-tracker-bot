@@ -19,6 +19,7 @@ import org.springframework.test.context.TestPropertySource;
             "resilience4j.ratelimiter.instances.default.limit-for-period=1"
         })
 public class UpdateControllerTest {
+
     @LocalServerPort
     private int port;
 

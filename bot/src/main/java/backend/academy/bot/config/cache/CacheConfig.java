@@ -12,6 +12,7 @@ import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactor
 @Configuration
 @EnableCaching
 public class CacheConfig {
+
     @Bean
     public RedisCacheConfiguration redisCacheConfiguration(CacheConfigProperties properties) {
         return RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofMinutes(properties.cacheTtl()));
